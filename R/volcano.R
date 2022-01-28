@@ -34,6 +34,9 @@
 #'
 #' @export
 produce_volcano <- function(de_res, fc_threshold = 3, graph = TRUE) {
+    stopifnot(is.numeric(fc_threshold))
+    stopifnot(fc_threshold > 0)
+
     red <- "#E73426"
     blue <- "#0020F5"
     grey <- "#7C7C7C"
@@ -61,7 +64,7 @@ produce_volcano <- function(de_res, fc_threshold = 3, graph = TRUE) {
 
     # Add color
     de_res <- dplyr::mutate(de_res, color = grey) %>%
-        dplyr::mutate(color = dplyr::if_else(log2FoldChange <= log2(1/fc_threshold) & padj <= 0.05,
+        dplyr::mutate(color = dplyr::if_else(log2FoldChange <= -log2(fc_threshold) & padj <= 0.05,
                                              blue, color)) %>%
         dplyr::mutate(color = dplyr::if_else(log2FoldChange >= log2(fc_threshold) & padj <= 0.05,
                                       red, color))
