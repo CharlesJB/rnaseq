@@ -84,7 +84,7 @@ produce_volcano <- function(de_res, fc_threshold = 3, graph = TRUE) {
         ggplot2::geom_point(size = 3, alpha = 0.8) +
         ggplot2::scale_colour_identity() +
         ggplot2::theme_minimal() +
-        ggplot2::geom_vline(xintercept = c(log2(1/fc_threshold), log2(fc_threshold)), linetype = "dashed") +
+        ggplot2::geom_vline(xintercept = c(-log2(fc_threshold), log2(fc_threshold)), linetype = "dashed") +
         ggplot2::annotate("text",
                  x = c(min_x, max_x),
                  y = count_y,
