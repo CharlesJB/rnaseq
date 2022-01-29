@@ -4,7 +4,7 @@
 \alias{produce_txi}
 \title{Produce txi objects}
 \usage{
-produce_txi(files, anno, ignoreTxVersion = TRUE)
+produce_txi(files, anno, ignoreTxVersion = TRUE, use_ruv = FALSE)
 }
 \value{
 A list with the txi objects at the gene and at the transcript level

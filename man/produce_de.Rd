@@ -4,7 +4,16 @@
 \alias{produce_de}
 \title{Produce DE table}
 \usage{
-produce_de(txi, design, formula = ~group, use_ruv = FALSE, ncores = 1)
+produce_de(
+  txi,
+  design,
+  contrasts,
+  formula = ~group,
+  use_ruv = FALSE,
+  ignoreTxVersion = TRUE,
+  digits = 4,
+  ncores = 1
+)
 }
 \value{
 A data.frame with the gene and tx DE merged in a single table

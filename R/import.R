@@ -1,39 +1,9 @@
 #' Import quantifications from Kallisto
 #'
 #' @param filenames Paths to the abundance files.
-#' @param anno The version of the annotation to use or a filename.
-#'             Currently available:
-#'             * Hs.Gencode19
-#'             * Hs.Gencode27
-#'             * Hs.Gencode32
-#'             * Hs.Gencode35
-#'             * Hs.Gencode37
-#'             * Hs.Ensembl79
-#'             * Hs.Ensembl91
-#'             * Hs.Ensembl95
-#'             * Hs.Ensembl97
-#'             * Hs.Ensembl98
-#'             * Hs.Ensembl100
-#'             * Hs.Ensembl101
-#'             * Mm.Ensembl91
-#'             * Mm.Ensembl92
-#'             * Mm.Ensembl94
-#'             * Mm.Ensembl97
-#'             * Mm.Ensembl99
-#'             * Mm.Ensembl100
-#'             * Mm.Ensembl101
-#'             * Rn.Ensembl76
-#'             * Rn.Ensembl79
-#'             * Rn.Ensembl92
-#'             * Rn.Ensembl98
-#'             * Bt.Ensembl99
-#'             * Mmu.Ensembl101
-#'             * Mmu.Ensembl103
-#'             * peaux_colonisees
-#'  If it is a filename, it must have the following columns: id, ensembl_gene,
-#'  symbol, entrez_id and transcript_type. Values can be NA except for id and
-#'  ensembl_gene. If \code{NULL}, use the \code{anno} param value, otherwise it
-#'  overwrite this param.
+#' @param anno The filename for the annotation in csv (see anno package)
+#'  It must have the following columns: id, ensembl_gene, symbol, entrez_id and
+#'  transcript_type. Values can be NA except for id and ensembl_gene.
 #' @param txOut Return counts and abundance at the transcript level. Default:
 #'              FALSE
 #' @param ignoreTxVersion Ignore version of tx. Default = FALSE
@@ -59,17 +29,13 @@
 import_kallisto <- function(filenames, anno, txOut = FALSE,
                             ignoreTxVersion = FALSE) {
     stopifnot(all(file.exists(filenames)))
+    stopifnot(all(file.exists(anno)))
     stopifnot(txOut %in% c(TRUE, FALSE))
     stopifnot(ignoreTxVersion %in% c(TRUE, FALSE))
 
-    if (!file.exists(anno)) {
-        tx2gene <- get(anno) %>%
-            dplyr::select(TXNAME = id, GENEID = ensembl_gene)
-    } else {
-        tx2gene <- readr::read_csv(anno, col_types = "ccccc") %>%
-            as.data.frame %>%
-            dplyr::select(TXNAME = id, GENEID = ensembl_gene)
-    }
+    tx2gene <- readr::read_csv(anno, col_types = "ccccc") %>%
+        as.data.frame %>%
+        dplyr::select(TXNAME = id, GENEID = ensembl_gene)
     if (txOut == TRUE) {
         txi <- tximport::tximport(filenames, type = "kallisto",
                                   tx2gene = tx2gene, txOut = TRUE,
@@ -157,11 +123,7 @@ arrange_anno <- function(anno) {
 
 get_anno <- function(anno, txOut = TRUE) {
 #    validate_anno(anno)
-    if (!file.exists(anno)) {
-        anno <- get(anno)
-    } else {
-        anno <- readr::read_csv(anno, col_types = "ccccc")
-    }
+    anno <- readr::read_csv(anno, col_types = "ccccc")
     if (!txOut) {
         anno <- dplyr::mutate(anno, id = ensembl_gene) %>%
             arrange_anno %>%
