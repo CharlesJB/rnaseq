@@ -37,6 +37,10 @@ produce_volcano <- function(de_res, fc_threshold = 3, graph = TRUE) {
     stopifnot(is.numeric(fc_threshold))
     stopifnot(fc_threshold > 0)
 
+    if (is(de_res, "DESeqResults")) {
+        de_res <- as.data.frame(de_res)
+    }
+
     red <- "#E73426"
     blue <- "#0020F5"
     grey <- "#7C7C7C"
