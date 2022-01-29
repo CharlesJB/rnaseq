@@ -41,12 +41,6 @@ produce_volcano <- function(de_res, fc_threshold = 3, graph = TRUE) {
     blue <- "#0020F5"
     grey <- "#7C7C7C"
 
-    # Remove NA padj
-    if (!is.data.frame(de_res)) {
-        de_res <- as.data.frame(de_res)
-    }
-    de_res <- dplyr::filter(de_res, !is.na(padj))
-
     # Rename qV to padj
     i <- stringr::str_detect(colnames(de_res), "qV")
     stopifnot(sum(i) %in% c(0,1))
@@ -55,6 +49,9 @@ produce_volcano <- function(de_res, fc_threshold = 3, graph = TRUE) {
     }
     de_res <- dplyr::mutate(de_res, padj = as.numeric(padj),
                             log2FoldChange = as.numeric(log2FoldChange))
+
+    # Remove NA padj
+    de_res <- dplyr::filter(de_res, !is.na(padj))
 
     # Remove inf -log10(padj), i.e.: padj == 0
     min_padj <- dplyr::filter(de_res, !is.na(padj), padj != 0) %>%
