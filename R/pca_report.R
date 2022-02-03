@@ -15,29 +15,47 @@ get_pca_df <- function(X, metadata, ncp = 2){
                 ylab = ylab))
 }
 
-# 3 plot pca
 plot_pca <- function(pca.obj, color = NULL, shape = NULL, show_name = TRUE, title = NULL){
 
+    # check pca.obj: list with pca.coord, xlab, ylab
+    # check color shape: NULL or "string", must be present in colnames pca.obj$coord
+    # check show_name: T/F
+    # check_title: string or NULL
 
+    # to avoid 6 shapes limitation
     shape_vec <- c(15,16,17,18,19,20,1,2,3,4,5,6,7,8,9,10,11,12,13,14)
 
-    gg <- ggplot(pca.obj$coord, aes(x = Dim.1, y = Dim.2))
+    # check if data has Dim.1, Dim.2
+    gg <- ggplot(pca.obj$coord, aes(x = Dim.1, y = Dim.2)) +
+        theme_bw() +
+        labs(x = pca.obj$xlab, y = pca.obj$ylab)
 
-    # add color
-    if(is.null(color) & is.null
+    # add color and shape
+    if(!is.null(color) & !is.null(shape)){
+        gg <- gg +  geom_point(aes_string(col = color, shape = shape), size = 3) +
+            scale_shape_manual(values = shape_vec[1:length(unique(pca.obj$coord$Dose))])
 
-       geom_point(aes_string(col = color_var, shape = shape_var), size = 3) +
+    } else if(!is.null(color) & is.null(shape)){
+        gg <- gg +  geom_point(aes_string(col = color), size = 3)
 
-           ggrepel::geom_text_repel(ggplot2::aes(label = sample),
-                                    color = "black", force = 10) +
-           theme_bw() +
-           labs(x = pca.obj$xlab, y = pca.obj$ylab) +
-           scale_shape_manual(values = shape_vec[1:length(unique(pca.obj$coord$Dose))])
+    } else if(is.null(color) & !is.null(shape)){
+        gg <- gg +  geom_point(aes_string(shape = shape), size = 3) +
+            scale_shape_manual(values = shape_vec[1:length(unique(pca.obj$coord$Dose))])
 
-       if(!is.null(title)){
-           gg <- gg + ggtitle(title)
-       }
+    } else{
+        gg <- gg +  geom_point(size = 3)
+    }
 
+    # show_name
+    if(!is.null(show_name)){
+        gg <- gg + ggrepel::geom_text_repel(ggplot2::aes(label = sample),
+                                            color = "black", force = 10)
+    }
 
-       return(gg)
-       }
+    # title
+    if(!is.null(title)){
+        gg <- gg + ggtitle(title)
+    }
+
+    return(gg)
+}
