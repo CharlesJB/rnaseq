@@ -28,7 +28,7 @@
 #' @param report_filename The name of the
 #' rmarkdown file to create. Default: report.Rmd
 #'
-#' @return Invisibly returns the \code{report_infos} table.
+#' @return Invisibly returns the lines saved to the Rmd file.
 #'
 #' @importFrom magrittr %>%
 #' @importFrom readr read_csv
