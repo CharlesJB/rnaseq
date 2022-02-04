@@ -2,7 +2,7 @@
 % Please edit documentation in R/PCA.R
 \name{produce_pca}
 \alias{produce_pca}
-\title{Produce a PCA plot from txi}
+\title{Deprecated}
 \usage{
 produce_pca(txi, graph = TRUE, use_ruv = FALSE)
 }
@@ -16,16 +16,6 @@ function.}
 \item{use_ruv}{Use RUVg normalization? Needs to be pre-computed using the
 \code{ruvg_normalization} function. Default: \code{FALSE}.}
 }
-\value{
-Produce the PCA and silently returns the \code{data.frame} and the
-result from the \code{PCA} function as a \code{list} with 2 elements
-(\code{df} and \code{pca}).
-}
 \description{
-Produce a PCA plot from txi
-}
-\examples{
-txi <- get_demo_txi()
-df <- produce_pca(txi, graph = FALSE)
-
+Deprecated
 }
