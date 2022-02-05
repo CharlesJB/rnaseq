@@ -4,7 +4,11 @@
 \alias{get_demo_txi}
 \title{Get demo txi file}
 \usage{
-get_demo_txi()
+get_demo_txi(large = FALSE)
+}
+\arguments{
+\item{large}{If \code{TRUE}, txi matrices will contain 8 samples, otherwise
+they will contain 4.}
 }
 \value{
 A txi object

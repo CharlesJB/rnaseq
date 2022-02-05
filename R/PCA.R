@@ -7,8 +7,8 @@
 #' function.
 #' @param graph Produce the graph. \code{TRUE} or \code{FALSE}. Default:
 #' \code{TRUE}.
-#' @param use_ruv Use RUVg normalization? Needs to be pre-computed using the
-#' \code{ruvg_normalization} function. Default: \code{FALSE}.
+#' @param use_normalisation What kind of normalisation should be used instead
+#' of TPM? Can be either "none", "ruvg" or "combat". Default: "none"
 #' @param min_counts The minimal mean number of count (TPM by default; see also
 #' the \code{ruvg_normalization} param) required to keep the feature (gene or
 #' transcript) for the PCA.
@@ -22,13 +22,12 @@
 #' to join the tables. Default: \code{NULL}.
 #' @param ncp Number of component to include in the graph. Default: 2.
 #'
-#' @return Produce the PCA and silently returns the \code{data.frame} and the
-#' result from the \code{PCA} function as a \code{list} with 2 elements
-#' (\code{df} and \code{pca}).
+#' @return Produce the PCA and silently returns a \code{list} with the
+#' coordinates and the x and y labels.
 #'
 #' @examples
 #' txi <- get_demo_txi()
-#' df <- produce_pca_df(txi)
+#' res_pca <- produce_pca_df(txi)
 #'
 #' @importFrom magrittr %>%
 #' @importFrom FactoMineR PCA
@@ -43,11 +42,12 @@
 #' @importFrom utils tail
 #'
 #' @export
-produce_pca_df <- function(txi, use_ruv = FALSE, min_counts = 5,
+
+produce_pca_df <- function(txi, use_normalisation = "none", min_counts = 5,
                            metadata = NULL, id_metadata = NULL, ncp = 2) {
 
     validate_txi(txi)
-    stopifnot(is(use_ruv, "logical"))
+    stopifnot(use_normalisation %in% c("none", "ruvg", "combat"))
     if (!is.null(metadata)) {
         stopifnot(is(metadata, "data.frame") | is(metadata, "character"))
         if (is.character(metadata)) {
@@ -65,12 +65,16 @@ produce_pca_df <- function(txi, use_ruv = FALSE, min_counts = 5,
     stopifnot(identical(ncp, round(ncp)))
     stopifnot(ncp > 1)
 
-    if (!use_ruv) {
+    if (use_normalisation == "none") {
         tpm <- as.data.frame(txi$abundance)
-    } else {
+    } else if (use_normalisation == "ruvg") {
         stopifnot("ruvg_counts" %in% names(txi))
         stopifnot(is(txi$ruvg_counts, "matrix"))
         tpm <- as.data.frame(txi$ruvg_counts)
+    } else if (use_normalisation == "combat") {
+        stopifnot("combat_counts" %in% names(txi))
+        stopifnot(is(txi$combat_counts, "matrix"))
+        tpm <- as.data.frame(txi$combat_counts)
     }
 
     tpm <- tpm %>%
@@ -145,7 +149,6 @@ produce_pca_df <- function(txi, use_ruv = FALSE, min_counts = 5,
 #' res_pca <- produce_pca_df(txi)
 #' p <- plot_pca(res_pca, graph = FALSE)
 #'
-
 #' @importFrom ggplot2 ggplot
 #' @importFrom ggplot2 aes
 #' @importFrom ggplot2 aes_string
@@ -249,11 +252,11 @@ plot_pca <- function(res_pca, size = 3, color = NULL, shape = NULL,
 #' function.
 #' @param graph Produce the graph. \code{TRUE} or \code{FALSE}. Default:
 #' \code{TRUE}.
-#' @param use_ruv Use RUVg normalization? Needs to be pre-computed using the
+#' @param use_ruvg Use RUVg normalization? Needs to be pre-computed using the
 #' \code{ruvg_normalization} function. Default: \code{FALSE}.
 #'
 #' @export
-produce_pca <- function(txi, graph = TRUE, use_ruv = FALSE) {
+produce_pca <- function(txi, graph = TRUE, use_ruvg = FALSE) {
     msg <- paste0("This function is now deprecated, please use the ",
                   "`produce_pca_df` and the `plot_pca` functions to produce ",
                   "your PCA.")

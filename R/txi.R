@@ -1,3 +1,25 @@
+filter_txi <- function(txi, samples) {
+    filter_matrices <- function(txi, name) {
+        stopifnot(all(samples %in% colnames(txi[[name]])))
+        txi[[name]] <- txi[[name]][,colnames(txi[[name]]) %in% samples]
+        txi
+    }
+    txi <- filter_matrices(txi, "counts")
+    txi <- filter_matrices(txi, "abundance")
+    txi <- filter_matrices(txi, "length")
+    if (!is.null(txi$fpkm)) {
+        txi <- filter_matrices(txi, "fpkm")
+    }
+    if (!is.null(txi$ruvg_counts)) {
+        txi <- filter_matrices(txi, "ruvg_counts")
+    }
+    if (!is.null(txi$combat_counts)) {
+        txi <- filter_matrices(txi, "combat_counts")
+    }
+    validate_txi(txi)
+    txi
+}
+
 validate_txi <- function(txi) {
     # Global
     stopifnot(is(txi, "list"))

@@ -9,39 +9,9 @@ import_kallisto(filenames, anno, txOut = FALSE, ignoreTxVersion = FALSE)
 \arguments{
 \item{filenames}{Paths to the abundance files.}
 
-\item{anno}{The version of the annotation to use or a filename.
-           Currently available:
-           * Hs.Gencode19
-           * Hs.Gencode27
-           * Hs.Gencode32
-           * Hs.Gencode35
-           * Hs.Gencode37
-           * Hs.Ensembl79
-           * Hs.Ensembl91
-           * Hs.Ensembl95
-           * Hs.Ensembl97
-           * Hs.Ensembl98
-           * Hs.Ensembl100
-           * Hs.Ensembl101
-           * Mm.Ensembl91
-           * Mm.Ensembl92
-           * Mm.Ensembl94
-           * Mm.Ensembl97
-           * Mm.Ensembl99
-           * Mm.Ensembl100
-           * Mm.Ensembl101
-           * Rn.Ensembl76
-           * Rn.Ensembl79
-           * Rn.Ensembl92
-           * Rn.Ensembl98
-           * Bt.Ensembl99
-           * Mmu.Ensembl101
-           * Mmu.Ensembl103
-           * peaux_colonisees
-If it is a filename, it must have the following columns: id, ensembl_gene,
-symbol, entrez_id and transcript_type. Values can be NA except for id and
-ensembl_gene. If \code{NULL}, use the \code{anno} param value, otherwise it
-overwrite this param.}
+\item{anno}{The filename for the annotation in csv (see anno package)
+It must have the following columns: id, ensembl_gene, symbol, entrez_id and
+transcript_type. Values can be NA except for id and ensembl_gene.}
 
 \item{txOut}{Return counts and abundance at the transcript level. Default:
 FALSE}

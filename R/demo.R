@@ -1,21 +1,30 @@
 #' Get demo kallisto abundance files
 #'
+#' @param large If \code{TRUE}, returns 8 filenames. Otherwise returns 4.
+#'
 #' @return A vector of kallisto abundance filenames
 #'
 #' @examples
 #' abundances <- get_demo_abundance_files()
 #'
 #' @export
-get_demo_abundance_files <- function() {
-    filenames <- c(system.file("extdata/quant/a/abundance.tsv", package="rnaseq"),
-      system.file("extdata/quant/b/abundance.tsv", package="rnaseq"),
-      system.file("extdata/quant/c/abundance.tsv", package="rnaseq"),
-      system.file("extdata/quant/d/abundance.tsv", package="rnaseq"))
-    names(filenames) <- letters[1:4]
+get_demo_abundance_files <- function(large = FALSE) {
+    stopifnot(is(large, "logical"))
+    path <- system.file("extdata/quant/", package = "rnaseq")
+    if (!large) {
+        dir_names <- letters[1:4]
+    } else {
+        dir_names <- letters[1:8]
+    }
+    filenames <- paste0(path, "/", dir_names, "/abundance.tsv")
+    names(filenames) <- dir_names
     filenames
 }
 
 #' Get demo txi file
+#'
+#' @param large If \code{TRUE}, txi matrices will contain 8 samples, otherwise
+#' they will contain 4.
 #'
 #' @return A txi object
 #'
@@ -23,8 +32,8 @@ get_demo_abundance_files <- function() {
 #' txi <- get_demo_txi()
 #'
 #' @export
-get_demo_txi <- function() {
-    abundances <- get_demo_abundance_files()
+get_demo_txi <- function(large = FALSE) {
+    abundances <- get_demo_abundance_files(large)
     names(abundances) <- basename(dirname(abundances))
     demo_anno <- system.file("extdata/demo_anno.csv", package = "rnaseq")
     import_kallisto(abundances, anno = demo_anno)
@@ -65,4 +74,28 @@ get_demo_kallisto_dir <- function() {
 #' @export
 get_demo_anno_file <- function() {
     system.file("extdata/demo_anno.csv", package = "rnaseq")
+}
+
+#' Get demo pca infos file
+#'
+#' @return The path to the pca infos file
+#'
+#' @examples
+#' pca_infos <- get_demo_pca_infos_file()
+#'
+#' @export
+get_demo_pca_infos_file <- function() {
+    system.file("extdata/pca_infos.csv", package = "rnaseq")
+}
+
+#' Get demo metadata file
+#'
+#' @return The path to the metadata file
+#'
+#' @examples
+#' metadata <- get_demo_metadata_file()
+#'
+#' @export
+get_demo_metadata_file <- function() {
+    system.file("extdata/metadata.csv", package = "rnaseq")
 }

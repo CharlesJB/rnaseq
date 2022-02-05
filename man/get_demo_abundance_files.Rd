@@ -4,7 +4,10 @@
 \alias{get_demo_abundance_files}
 \title{Get demo kallisto abundance files}
 \usage{
-get_demo_abundance_files()
+get_demo_abundance_files(large = FALSE)
+}
+\arguments{
+\item{large}{If \code{TRUE}, returns 8 filenames. Otherwise returns 4.}
 }
 \value{
 A vector of kallisto abundance filenames

@@ -6,7 +6,7 @@
 \usage{
 produce_pca_df(
   txi,
-  use_ruv = FALSE,
+  use_normalisation = "none",
   min_counts = 5,
   metadata = NULL,
   id_metadata = NULL,
@@ -17,8 +17,8 @@ produce_pca_df(
 \item{txi}{The \code{txi} object returned by the \code{import_kallisto}
 function.}
 
-\item{use_ruv}{Use RUVg normalization? Needs to be pre-computed using the
-\code{ruvg_normalization} function. Default: \code{FALSE}.}
+\item{use_normalisation}{What kind of normalisation should be used instead
+of TPM? Can be either "none", "ruvg" or "combat". Default: "none"}
 
 \item{min_counts}{The minimal mean number of count (TPM by default; see also
 the \code{ruvg_normalization} param) required to keep the feature (gene or
@@ -40,9 +40,8 @@ metadata available, keep the default value of \code{NULL}. Value can either
 be a csv file or a \code{data.frame}. Default: \code{NULL}.}
 }
 \value{
-Produce the PCA and silently returns the \code{data.frame} and the
-result from the \code{PCA} function as a \code{list} with 2 elements
-(\code{df} and \code{pca}).
+Produce the PCA and silently returns a \code{list} with the
+coordinates and the x and y labels.
 }
 \description{
 The PCA is produced using the TPM by default (can also be the ruvg counts;
@@ -50,6 +49,6 @@ see the \code{ruvg_normalization} param)
 }
 \examples{
 txi <- get_demo_txi()
-df <- produce_pca_df(txi)
+res_pca <- produce_pca_df(txi)
 
 }
