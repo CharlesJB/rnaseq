@@ -3,22 +3,37 @@
 #' The goal of this function is to take a csv file or a \code{data.frame}
 #' describing all the PCA to produce and launch them in batches.
 #'
-#' The table must contain the following columns:
-#'   * id_plot: unique identifier for this graph
+#' The table may contain the following columns, in no specific order:
+#'   * id_plot: unique identifier for this graph. Mandatory
 #'   * group: column from the metadata file to subset the txi. If value is
-#'            NA, all the samples will be used in the PCA.
-#'   * group_val: Value in the group column to use in current PCA
+#'            NA, all the samples will be used in the PCA. If value is not
+#'            NA, group_val value must not be NA either. If NA, group_val
+#'            must also be NA. Default: NA
+#'   * group_val: Value in the group column to use in current PCA. If group
+#'                is NA, group_val must also be NA. If group is not NA,
+#'                group_val must be a valid column name from the metadata
+#'                table. Default: NA
 #'   * use_normalisation: "none", "ruvg" or "combat" (txi must be produced in
-#'              consequence)
+#'              consequence). Default: "none"
 #'   * min_counts: Mean values of counts (TPM, ruvg or combat) to keep gene for
-#'                 PCA.
+#'                 PCA. Default: 5
 #'   * id_metadata: Column in metadata table that contains the sample names.
-#'   * size: The point size
-#'   * shape: The column in the metadata file to use to define shapes
-#'   * color: The column in the metadata file to use to define colors
-#'   * title: The title of the PCA
-#'   * legend.position: "left", "right", "top" or "bottom"
-#'   * legend.box: "horizontal" or "vertical"
+#'                  Must be present in the colnames of the metadata table.
+#'                  Default: NA
+#'   * size: The point size. Default: 3
+#'   * shape: The column in the metadata file to use to define shapes.
+#'            Default: NA
+#'   * color: The column in the metadata file to use to define colors.
+#'             Default: NA
+#'   * title: The title of the PCA. Default: NA
+#'   * legend.position: "left", "right", "top" or "bottom". Default: "right"
+#'   * legend.box: "horizontal" or "vertical". Default: "vertical"
+#'
+#' Only the id_plot is mandatory. This value is used to name the PCA plots that
+#' are created by the batch_pca function and the output and r_objects filename.
+#'
+#' If the other columns are absent, they will be automatically created and
+#' filled with their default values.
 #'
 #' @param pca_infos A csv file or a \code{data.frame} describing the PCA to
 #' produce.
@@ -36,17 +51,17 @@
 #' as <r_objects>/<id_plot>.rds. Default: \code{NULL}.
 #' @param force Should the files be re-created if they already exists? Default:
 #' \code{FALSE}.
-#' 
+#'
 #' @return Invisibly returns a \code{list} of all the ggplots.
-#' 
+#'
 #' @examples
 #' pca_infos <- get_demo_pca_infos_file()
 #' txi <- get_demo_txi(large = TRUE)
 #' metadata <- get_demo_metadata_file()
 #' gg_list <- batch_pca(pca_infos, txi, metadata)
-#' 
+#'
 #' @importFrom readr read_csv
-#' 
+#'
 #' @export
 batch_pca <- function(pca_infos, txi, metadata = NULL, outdir = NULL,
                       r_objects = NULL, force = FALSE) {
@@ -238,7 +253,7 @@ validate_pca_infos <- function(pca_infos, metadata, txi) {
                 errors[[current_id]] <- c(errors[[current_id]], msg)
             }
         }
-        
+       
         ## size
         current_size <- pca_infos$size[i]
 
