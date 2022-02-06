@@ -28,7 +28,7 @@
 #'   * title: The title of the PCA. Default: NA
 #'   * legend.position: "left", "right", "top" or "bottom". Default: "right"
 #'   * legend.box: "horizontal" or "vertical". Default: "vertical"
-t#'   * show_names: Show sample names on PCA? Default: TRUE
+#'   * show_names: Show sample names on PCA? Default: TRUE
 #'
 #' Only the id_plot is mandatory. This value is used to name the PCA plots that
 #' are created by the batch_pca function and the output and r_objects filename.
