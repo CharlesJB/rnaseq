@@ -105,12 +105,18 @@ batch_pca <- function(pca_infos, txi, metadata = NULL, outdir = NULL,
         current_id <- pca_infos$id_plot[i]
         gg <- produce_single_pca_batch(pca_infos[i,,drop=FALSE], txi, metadata)
         if (!is.null(outdir)) {
-            pdf(paste0(outdir, "/", current_id, ".pdf"))
-            print(gg)
-            dev.off()
+            output_pdf <- paste0(outdir, "/", current_id, ".pdf")
+            if (!file.exists(output_pdf) | force) {
+                pdf(output_pdf)
+                print(gg)
+                dev.off()
+            }
         }
         if (!is.null(r_objects)) {
-            saveRDS(gg, paste0(r_objects, "/", current_id, ".rds"))
+            output_rds <- paste0(r_objects, "/", current_id, ".rds")
+            if (!file.exists(output_rds) | force) {
+                saveRDS(gg, output_rds)
+            }
         }
         res[[current_id]] <- gg
     }
