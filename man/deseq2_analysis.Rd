@@ -4,7 +4,7 @@
 \alias{deseq2_analysis}
 \title{DESeq2 analysis}
 \usage{
-deseq2_analysis(txi, design, formula, filter = 2, use_ruv = FALSE, ...)
+deseq2_analysis(txi, design, formula, filter = 2, count_matrix = NULL, ...)
 }
 \arguments{
 \item{txi}{The txi object returned by the import_kallisto function.}
@@ -17,10 +17,12 @@ deseq2_analysis(txi, design, formula, filter = 2, use_ruv = FALSE, ...)
 \item{filter}{The minimum number of reads detected for a feature across all
 samples. Default: 2}
 
-\item{use_ruv}{Use RUVg normalization? Needs to be pre-computed using the
-\code{ruvg_normalization} function.}
+\item{count_matrix}{The count matrix to use for the differential analysis.
+Will use the \code{DESeq2::DESeqDataSetFromMatrix} instead of the
+\code{DESeq2::DESeqDataSetFromTximport} function, so will work even if txi
+object is incomplete (i.e.: length matrix is missing). Default: NA}
 
-\item{...}{Extract param for the DESeq2::DESeq function}
+\item{...}{Extra param for the DESeq2::DESeq function}
 }
 \value{
 A DESeqDataSet object.

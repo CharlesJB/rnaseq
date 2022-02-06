@@ -99,3 +99,15 @@ get_demo_pca_infos_file <- function() {
 get_demo_metadata_file <- function() {
     system.file("extdata/metadata.csv", package = "rnaseq")
 }
+
+#' Get demo de_infos file
+#'
+#' @return The path to the DE infos file
+#'
+#' @examples
+#' de_infos <- get_demo_de_infos_file()
+#'
+#' @export
+get_demo_de_infos_file <- function() {
+    system.file("extdata/de_infos.csv", package = "rnaseq")
+}

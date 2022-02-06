@@ -6,9 +6,11 @@
 #'                ?DESeqDataSetFromTximport).
 #' @param filter The minimum number of reads detected for a feature across all
 #'               samples. Default: 2
-#' @param use_ruv Use RUVg normalization? Needs to be pre-computed using the
-#'                \code{ruvg_normalization} function.
-#' @param ... Extract param for the DESeq2::DESeq function
+#' @param count_matrix The count matrix to use for the differential analysis.
+#' Will use the \code{DESeq2::DESeqDataSetFromMatrix} instead of the
+#' \code{DESeq2::DESeqDataSetFromTximport} function, so will work even if txi
+#' object is incomplete (i.e.: length matrix is missing). Default: NA
+#' @param ... Extra param for the DESeq2::DESeq function
 #'
 #' @return A DESeqDataSet object.
 #'
@@ -23,15 +25,20 @@
 #' @importFrom DESeq2 DESeq
 #'
 #' @export
-deseq2_analysis <- function(txi, design, formula, filter = 2, use_ruv = FALSE, ...) {
+deseq2_analysis <- function(txi, design, formula, filter = 2,
+                            count_matrix = NULL, ...) {
+    validate_txi(txi)
     stopifnot(all(c("sample", "group") %in% colnames(design)))
     stopifnot(identical(colnames(txi$counts), as.character(design$sample)))
-    stopifnot(is(use_ruv, "logical"))
+    if (!is.null(count_matrix)) {
+        stopifnot(is(count_matrix, "character"))
+        stopifnot(count_matrix %in% names(txi))
+        stopifnot(is(txi[[count_matrix]], "matrix"))
+    }
 
-    if (use_ruv) {
-        stopifnot("ruvg_counts" %in% names(txi))
-        stopifnot(is(txi$ruvg_counts, "matrix"))
-        dds <- DESeq2::DESeqDataSetFromMatrix(txi$ruvg_counts, design, formula)
+    if (!is.null(count_matrix)) {
+        dds <- DESeq2::DESeqDataSetFromMatrix(txi[[count_matrix]], design,
+                                              formula)
     } else {
         dds <- DESeq2::DESeqDataSetFromTximport(txi, design, formula)
     }
