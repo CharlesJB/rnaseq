@@ -96,17 +96,6 @@ test_that("Invalid metadata values throws correct errors", {
     expect_error(batch_pca(pca_infos, txi, data.frame()), msg, fixed = TRUE)
 })
 
-test_that("Invalid metadata values throws correct errors", {
-    pca_infos <- get_demo_pca_infos_file() %>% read_csv(show_col_types = FALSE)
-    metadata <- get_demo_metadata_file()
-    msg <- 'file.exists(metadata) is not TRUE'
-    expect_error(batch_pca(pca_infos, txi, "a"), msg, fixed = TRUE)
-    msg <- 'is(metadata, "data.frame") | is(metadata, "character") is not TRUE'
-    expect_error(batch_pca(pca_infos, txi, 1), msg, fixed = TRUE)
-    msg <- 'nrow(metadata) > 0 is not TRUE'
-    expect_error(batch_pca(pca_infos, txi, data.frame()), msg, fixed = TRUE)
-})
-
 test_that("Invalid directories values throws correct errors", {
     pca_infos <- get_demo_pca_infos_file() %>% read_csv(show_col_types = FALSE)
     metadata <- get_demo_metadata_file()
@@ -201,6 +190,17 @@ test_that("Valid pca_anno legend.box column works", {
     pca_infos <- data.frame(id_plot = "a", id_metadata = "id", legend.box = "horizontal")
     gg_list <- batch_pca(pca_infos, txi, metadata)
     validate_gg(gg_list[[1]], "test_grp1", meta = TRUE, group = FALSE)
+})
+
+test_that("Valid pca_anno show_names column works", {
+    txi <- valid_txi
+    metadata <- get_demo_metadata_file()
+    pca_infos <- data.frame(id_plot = "a", show_names = TRUE)
+    gg_list <- batch_pca(pca_infos, txi)
+    validate_gg(gg_list[[1]], "test_grp1", meta = FALSE, group = FALSE)
+    pca_infos <- data.frame(id_plot = "a", show_names = FALSE)
+    gg_list <- batch_pca(pca_infos, txi)
+    validate_gg(gg_list[[1]], "test_grp1", meta = FALSE, group = FALSE)
 })
 
 test_that("Invalid pca_anno id_plot column content throws correct errors", {

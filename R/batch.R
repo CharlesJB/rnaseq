@@ -28,6 +28,7 @@
 #'   * title: The title of the PCA. Default: NA
 #'   * legend.position: "left", "right", "top" or "bottom". Default: "right"
 #'   * legend.box: "horizontal" or "vertical". Default: "vertical"
+t#'   * show_names: Show sample names on PCA? Default: TRUE
 #'
 #' Only the id_plot is mandatory. This value is used to name the PCA plots that
 #' are created by the batch_pca function and the output and r_objects filename.
@@ -162,6 +163,8 @@ complete_pca_infos <- function(pca_infos) {
         pca_infos[["legend.position"]] <- "right"
     if (!"legend.box" %in% colnames(pca_infos))
         pca_infos[["legend.box"]] <- "vertical"
+    if (!"show_names" %in% colnames(pca_infos))
+        pca_infos[["show_names"]] <- TRUE
     pca_infos
 }
 
@@ -334,6 +337,13 @@ validate_pca_infos <- function(pca_infos, metadata, txi) {
         }
         if (!current_legend_box %in% c("vertical", "horizontal")) {
             msg <- "Invalid legend.box value (vertical or horizontal)"
+            errors[[current_id]] <- c(errors[[current_id]], msg)
+        }
+
+        ## show_names
+        current_show_names <- pca_infos[["show_names"]][i]
+        if (!is(current_show_names, "logical")) {
+            msg <- "Invalid show_names value (logical)"
             errors[[current_id]] <- c(errors[[current_id]], msg)
         }
     }
