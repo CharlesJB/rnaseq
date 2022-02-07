@@ -36,6 +36,7 @@
 #' <r_objects>/<id_de>.rds. Default: \code{NULL}.
 #' @param force Should the files be re-created if they already exists? Default:
 #' \code{FALSE}.
+#' @param cores Number of cores for the DE analysis. Default: 1
 #'
 #' @return Invisibly returns a \code{list} of all the DE results.
 #'
@@ -45,10 +46,16 @@
 #' de_list <- batch_de(de_infos, txi, design)
 #'
 #' @importFrom readr read_csv
+#' @importFrom parallel mclapply
+#' @importFrom tibble rownames_to_column
+#' @importFrom dplyr full_join
+#' @importFrom dplyr select
+#' @importFrom dplyr everything
+#' @importFrom readr write_csv
 #'
 #' @export
 batch_de <- function(de_infos, txi, design, outdir = NULL, r_objects = NULL,
-                     force = FALSE) {
+                     force = FALSE, cores = 1) {
 
     # 1. Data validation
     ## de_infos
@@ -94,13 +101,18 @@ batch_de <- function(de_infos, txi, design, outdir = NULL, r_objects = NULL,
     stopifnot(is(force, "logical"))
     stopifnot(!is.na(force))
 
+    ## cores
+    stopifnot(is(cores, "numeric"))
+    stopifnot(cores == round(cores))
+    stopifnot(cores > 0)
+
     # Complete DE infos
     de_infos <- complete_de_infos(de_infos)
     stopifnot(length(validate_de_infos(de_infos, design, txi)) == 0)
 
     # Produce the DE
     res <- list()
-    for (i in seq_along(de_infos$id_de)) {
+    de_analysis <- function(i) {
         current_id <- de_infos$id_de[i]
         output_rds <- paste0(r_objects, "/", current_id, ".rds")
         if (!force & !is.null(r_objects) & file.exists(output_rds)) {
@@ -113,7 +125,12 @@ batch_de <- function(de_infos, txi, design, outdir = NULL, r_objects = NULL,
         if (!is.null(outdir)) {
             output_csv <- paste0(outdir, "/", current_id, ".csv")
             if (!file.exists(output_csv) | force) {
-                readr::write_csv(res_de$de, output_csv)
+                res_de$de %>%
+                    as.data.frame %>%
+                    tibble::rownames_to_column("id") %>%
+                    dplyr::full_join(txi$anno, by = "id") %>%
+                    dplyr::select(id, ensembl_gene:transcript_type, dplyr::everything()) %>%
+                    readr::write_csv(output_csv)
             }
         }
         if (!is.null(r_objects)) {
@@ -123,7 +140,7 @@ batch_de <- function(de_infos, txi, design, outdir = NULL, r_objects = NULL,
         }
         res[[current_id]] <- res_de$de
     }
-    invisible(res)
+    invisible(parallel::mclapply(1:nrow(de_infos), de_analysis, mc.cores = cores))
 }
 
 complete_de_infos <- function(de_infos) {

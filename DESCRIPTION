@@ -1,6 +1,6 @@
 Package: rnaseq
 Title: Wrapper Functions for RNA-Seq Post-Processing
-Version: 0.1.6
+Version: 0.1.7
 Authors@R: person("Charles", "Joly Beauparlant", email =
                   "Charles.Joly-Beauparlant@crchul.ulaval.ca",
                   role = c("aut", "cre"))
@@ -27,7 +27,8 @@ Imports:
     purrr,
     rhdf5,
     magrittr,
-    EDASeq
+    EDASeq,
+    parallel
 Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3

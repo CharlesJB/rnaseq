@@ -4,7 +4,15 @@
 \alias{batch_de}
 \title{Produce differential expression analysis in batch}
 \usage{
-batch_de(de_infos, txi, design, outdir = NULL, r_objects = NULL, force = FALSE)
+batch_de(
+  de_infos,
+  txi,
+  design,
+  outdir = NULL,
+  r_objects = NULL,
+  force = FALSE,
+  cores = 1
+)
 }
 \arguments{
 \item{de_infos}{A csv file or a \code{data.frame} describing the DE analysis
@@ -23,6 +31,8 @@ the comparisons.}
 
 \item{force}{Should the files be re-created if they already exists? Default:
 \code{FALSE}.}
+
+\item{cores}{Number of cores for the DE analysis. Default: 1}
 }
 \value{
 Invisibly returns a \code{list} of all the DE results.
