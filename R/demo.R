@@ -111,3 +111,15 @@ get_demo_metadata_file <- function() {
 get_demo_de_infos_file <- function() {
     system.file("extdata/de_infos.csv", package = "rnaseq")
 }
+
+#' Get demo volcano_infos file
+#'
+#' @return The path to the DE infos file
+#'
+#' @examples
+#' volcano_infos <- get_demo_volcano_infos_file()
+#'
+#' @export
+get_demo_volcano_infos_file <- function() {
+    system.file("extdata/volcano_infos.csv", package = "rnaseq")
+}

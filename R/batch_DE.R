@@ -41,6 +41,7 @@
 #' @return Invisibly returns a \code{list} of all the DE results.
 #'
 #' @examples
+#' de_infos <- get_demo_de_infos_file()
 #' txi <- get_demo_txi()
 #' design <- get_demo_design()
 #' de_list <- batch_de(de_infos, txi, design)
@@ -67,7 +68,6 @@ batch_de <- function(de_infos, txi, design, outdir = NULL, r_objects = NULL,
     stopifnot(nrow(de_infos) > 0)
     stopifnot("id_de" %in% colnames(de_infos))
     stopifnot(!any(is.na(de_infos$id_de)))
-    stopifnot(nrow(de_infos) > 0)
     stopifnot(!any(duplicated(de_infos$id_de)))
     expected_cols <- c("group", "contrast_1", "contrast_2")
     stopifnot(all(expected_cols %in% colnames(de_infos)))
@@ -140,7 +140,9 @@ batch_de <- function(de_infos, txi, design, outdir = NULL, r_objects = NULL,
         }
         res[[current_id]] <- res_de$de
     }
-    invisible(parallel::mclapply(1:nrow(de_infos), de_analysis, mc.cores = cores))
+    de_list <- parallel::mclapply(1:nrow(de_infos), de_analysis, mc.cores = cores)
+    names(de_list) <- de_infos$id_de
+    invisible(de_list)
 }
 
 complete_de_infos <- function(de_infos) {

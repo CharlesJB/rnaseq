@@ -64,6 +64,7 @@ The table may contain the following columns, in no specific order:
   object is incomplete (i.e.: length matrix is missing). Default: NA
 }
 \examples{
+de_infos <- get_demo_de_infos_file()
 txi <- get_demo_txi()
 design <- get_demo_design()
 de_list <- batch_de(de_infos, txi, design)

@@ -4,21 +4,52 @@
 \alias{produce_volcano}
 \title{produce a volcano plot from DESeq2 results}
 \usage{
-produce_volcano(de_res, fc_threshold = 3, graph = TRUE)
+produce_volcano(
+  de_res,
+  fc_threshold = 3,
+  p_threshold = 0.05,
+  y_axis = "padj",
+  show_signif_counts = TRUE,
+  show_signif_lines = "vertical",
+  show_signif_color = TRUE,
+  col_up = "#E73426",
+  col_down = "#0020F5",
+  size = 3,
+  graph = TRUE
+)
 }
 \arguments{
 \item{de_res}{the \code{data.frame} object returned by the
 \code{DESeq2::results} function.}
 
 \item{fc_threshold}{The threshold of FC to be considered as significant.
-Default: \code{TRUE}.}
+Default: 0.05}
+
+\item{p_threshold}{The threshold of p stat to be considered as significant.
+Default: 1.5}
+
+\item{y_axis}{Statistical results to show in volcano plot. "pvalue" or "padj".
+Defauld: "padj"}
+
+\item{show_signif_counts}{show the number of up- and down-regulated genes?}
+
+\item{show_signif_lines}{show lines at the threshold for significance? "none",
+"vertical","horizontal" or "both". Default: "vertical"}
+
+\item{show_signif_color}{Show color for significant genes? Default: TRUE}
+
+\item{col_up}{Color of the up-regulated genes. Default: "#E73426"}
+
+\item{col_down}{Color of the down-regulated genes. Default: "#0020F5"}
+
+\item{size}{The size of the points. Default: 3.}
 
 \item{graph}{produce the graph. \code{true} or \code{false}. default:
 \code{true}.}
 }
 \value{
 produce the volcano plot and silently returns the \code{ggplot}
-object and the data.frame used.
+object and the data.frame used. # TODO: data.frame w anno, df signif
 }
 \description{
 produce a volcano plot from DESeq2 results
