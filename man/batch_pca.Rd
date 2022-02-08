@@ -10,7 +10,8 @@ batch_pca(
   metadata = NULL,
   outdir = NULL,
   r_objects = NULL,
-  force = FALSE
+  force = FALSE,
+  cores = 1
 )
 }
 \arguments{
@@ -30,6 +31,8 @@ as <r_objects>/<id_plot>.rds. Default: \code{NULL}.}
 
 \item{force}{Should the files be re-created if they already exists? Default:
 \code{FALSE}.}
+
+\item{cores}{Number of cores for the DE analysis. Default: 1}
 
 \item{metatada}{The metadata to add to the coordinate table to add color or
 shape with the results and the \code{plot_pca} function. If there is no

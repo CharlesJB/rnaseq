@@ -52,6 +52,7 @@
 #' as <r_objects>/<id_plot>.rds. Default: \code{NULL}.
 #' @param force Should the files be re-created if they already exists? Default:
 #' \code{FALSE}.
+#' @param cores Number of cores for the DE analysis. Default: 1
 #'
 #' @return Invisibly returns a \code{list} of all the ggplots.
 #'
@@ -65,7 +66,7 @@
 #'
 #' @export
 batch_pca <- function(pca_infos, txi, metadata = NULL, outdir = NULL,
-                      r_objects = NULL, force = FALSE) {
+                      r_objects = NULL, force = FALSE, cores = 1) {
 
     # 1. Data validation
     ## pca_infos
@@ -111,13 +112,18 @@ batch_pca <- function(pca_infos, txi, metadata = NULL, outdir = NULL,
     stopifnot(is(force, "logical"))
     stopifnot(!is.na(force))
 
+    ## cores
+    stopifnot(is(cores, "numeric"))
+    stopifnot(cores == round(cores))
+    stopifnot(cores > 0)
+
     # Complete PCA infos
     pca_infos <- complete_pca_infos(pca_infos)
     stopifnot(length(validate_pca_infos(pca_infos, metadata, txi)) == 0)
 
     # Produce the pca
     res <- list()
-    for (i in seq_along(pca_infos$id_plot)) {
+    pca_analysis <- function(i) {
         current_id <- pca_infos$id_plot[i]
         gg <- produce_single_pca_batch(pca_infos[i,,drop=FALSE], txi, metadata)
         if (!is.null(outdir)) {
@@ -136,7 +142,9 @@ batch_pca <- function(pca_infos, txi, metadata = NULL, outdir = NULL,
         }
         res[[current_id]] <- gg
     }
-    invisible(res)
+    pca_list <- parallel::mclapply(1:nrow(pca_infos), pca_analysis, mc.cores = cores)
+    names(pca_list) <- pca_infos$id_plot
+    invisible(pca_list)
 }
 
 complete_pca_infos <- function(pca_infos) {
