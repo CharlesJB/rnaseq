@@ -99,6 +99,7 @@ test_that("Invalid metadata values throws correct errors", {
 test_that("Invalid directories values throws correct errors", {
     pca_infos <- get_demo_pca_infos_file() %>% read_csv(show_col_types = FALSE)
     metadata <- get_demo_metadata_file()
+    txi <- valid_txi
     msg <- 'is(outdir, "character") is not TRUE'
     expect_error(batch_pca(pca_infos, txi, metadata, outdir = 1), msg, fixed = TRUE)
     expect_error(batch_pca(pca_infos, txi, metadata, outdir = NA), msg, fixed = TRUE)
@@ -110,6 +111,7 @@ test_that("Invalid directories values throws correct errors", {
 test_that("Invalid force values throws correct errors", {
     pca_infos <- get_demo_pca_infos_file() %>% read_csv(show_col_types = FALSE)
     metadata <- get_demo_metadata_file()
+    txi <- valid_txi
     msg <- 'is(force, "logical") is not TRUE'
     expect_error(batch_pca(pca_infos, txi, metadata, force = 1), msg, fixed = TRUE)
     msg <- '!is.na(force) is not TRUE'

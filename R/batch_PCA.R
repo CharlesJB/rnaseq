@@ -125,9 +125,15 @@ batch_pca <- function(pca_infos, txi, metadata = NULL, outdir = NULL,
     res <- list()
     pca_analysis <- function(i) {
         current_id <- pca_infos$id_plot[i]
-        gg <- produce_single_pca_batch(pca_infos[i,,drop=FALSE], txi, metadata)
+        output_pdf <- paste0(outdir, "/", current_id, ".pdf")
+        output_rds <- paste0(r_objects, "/", current_id, ".rds")
+
+        if (!is.null(r_objects) & file.exists(output_rds) & !force) {
+            gg <- readRDS(output_rds)
+        } else {
+            gg <- produce_single_pca_batch(pca_infos[i,,drop=FALSE], txi, metadata)
+        }
         if (!is.null(outdir)) {
-            output_pdf <- paste0(outdir, "/", current_id, ".pdf")
             if (!file.exists(output_pdf) | force) {
                 pdf(output_pdf)
                 print(gg)
@@ -135,7 +141,6 @@ batch_pca <- function(pca_infos, txi, metadata = NULL, outdir = NULL,
             }
         }
         if (!is.null(r_objects)) {
-            output_rds <- paste0(r_objects, "/", current_id, ".rds")
             if (!file.exists(output_rds) | force) {
                 saveRDS(gg, output_rds)
             }
