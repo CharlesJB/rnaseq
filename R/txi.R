@@ -1,3 +1,19 @@
+#' Filter out txi object
+#'
+#' This function allow to filter the txi object by taking a list of sample to
+#' keep. All the expected matrices will be filtered (counts, abundance, fpkm,
+#' ruvg_counts and combat_counts.
+#'
+#' @param txi The txi object returned by the import_kallisto function.
+#' @param samples The list of samples to keep.
+#'
+#' @return The filter txi object.
+#'
+#' @examples
+#' txi <- get_demo_txi() # sample names are "a", "b", "c" and "d"
+#' txi_filter <- filter_txi(txi, c("a", "c")) # Only keep "a" and "c"
+#'
+#' @export
 filter_txi <- function(txi, samples) {
     filter_matrices <- function(txi, name) {
         stopifnot(all(samples %in% colnames(txi[[name]])))
