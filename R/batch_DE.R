@@ -215,7 +215,7 @@ validate_de_infos <- function(de_infos, design, txi) {
                 msg <- "count_matrix column should be in character format"
                 errors[[current_id]] <- c(errors[[current_id]], msg)
             } else {
-                if (!current_matrix %in% names(txi)) {
+                if (!current_count_matrix %in% names(txi)) {
                     msg <- "count_matrix not found in txi"
                     errors[[current_id]] <- c(errors[[current_id]], msg)
                 }
