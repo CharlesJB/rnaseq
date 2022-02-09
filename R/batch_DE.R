@@ -240,6 +240,7 @@ produce_single_de_batch <- function(current_de_info, txi, design, dds) {
     current_contrasts <- c(cdi$contrast_1, cdi$contrast_2)
     current_samples <- design$sample[cd %in% current_contrasts]
     txi <- filter_txi(txi, current_samples)
+    design <- dplyr::filter(design, sample %in% current_samples)
 
     if (is(cdi$formula, "character")) {
         formula <- eval(parse(text=cdi$formula))
