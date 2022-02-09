@@ -28,7 +28,7 @@
 deseq2_analysis <- function(txi, design, formula, filter = 2,
                             count_matrix = NULL, ...) {
     validate_txi(txi)
-    stopifnot(all(c("sample", "group") %in% colnames(design)))
+    stopifnot(all(c("sample") %in% colnames(design)))
     stopifnot(identical(colnames(txi$counts), as.character(design$sample)))
     if (!is.null(count_matrix)) {
         stopifnot(is(count_matrix, "character"))
