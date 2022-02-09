@@ -32,6 +32,9 @@ filter_txi <- function(txi, samples) {
     if (!is.null(txi$combat_counts)) {
         txi <- filter_matrices(txi, "combat_counts")
     }
+    if (!is.null(txi$extra_count_matrix)) {
+        txi <- filter_matrices(txi, "extra_count_matrix")
+    }
     validate_txi(txi)
     txi
 }
