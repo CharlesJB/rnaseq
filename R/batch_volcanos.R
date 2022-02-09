@@ -147,12 +147,14 @@ batch_volcano <- function(volcano_infos, de_results, add_labels = NULL,
         }
         if (!is.null(r_objects)) {
             if (!file.exists(output_rds) | force) {
-                saveRDS(current_volcano, output_rds)
+                saveRDS(current_volcano$p, output_rds)
             }
         }
-        res[[current_id]] <- current_volcano
+        res[[current_id]] <- current_volcano$p
     }
-    invisible(parallel::mclapply(1:nrow(volcano_infos), volcano_analysis, mc.cores = cores))
+    res_volcano <- parallel::mclapply(1:nrow(volcano_infos), volcano_analysis, mc.cores = cores)
+    names(res_volcano) <- volcano_infos$id_plot
+    invisible(res_volcano)
 }
 
 complete_volcano_infos <- function(volcano_infos) {
