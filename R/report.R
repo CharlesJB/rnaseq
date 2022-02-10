@@ -6,6 +6,13 @@
 #' following: text, file or plot. The value will vary depending on the type of
 #' add.
 #'
+#' You can also add the \code{id_report} column that will need to contains a
+#' unique identifiers for each line of the report_infos table.
+#'
+#' The \code{extra} column will be used only when the \code{add} value is
+#' "plot" and will be added as is to the code chunk. Be aware that not validity
+#' checks are performed. Make sure you use valid chunk option syntax.
+#'
 #' For text, it must be a character string corresponding to the text that
 #' will be directly added to the file specified with \code{report_filename}
 #' file.
@@ -46,8 +53,12 @@ produce_report <- function(report_infos, report_filename = "report.Rmd") {
         stopifnot(file.exists(report_infos))
         report_infos <- readr::read_csv(report_infos, show_col_types = FALSE)
     }
-    stopifnot(all(c("add", "value") %in% colnames(report_infos)))
     stopifnot(nrow(report_infos) > 0)
+    stopifnot(all(c("add", "value") %in% colnames(report_infos)))
+    report_infos <- complete_report_infos(report_infos)
+    stopifnot(is(report_infos$id_report, "character"))
+    stopifnot(!any(duplicated(report_infos$id_report)))
+    stopifnot(is(report_infos$extra, "character"))
     stopifnot(all(report_infos$add %in% c("text", "file", "plot")))
     all_ids <- dplyr::filter(report_infos, add == "plot") %>%
             dplyr::pull(value) %>%
@@ -72,6 +83,7 @@ produce_report <- function(report_infos, report_filename = "report.Rmd") {
     for (i in 1:nrow(report_infos)) {
         current_add <- report_infos$add[i]
         current_value <- report_infos$value[i]
+        current_extra <- report_infos$extra[i]
 
         if (current_add == "text") {
             lines <- c(lines, current_value, "\n")
@@ -80,7 +92,7 @@ produce_report <- function(report_infos, report_filename = "report.Rmd") {
         } else if (current_add == "plot") {
             current_id <- basename(current_value) %>%
                 tools::file_path_sans_ext()
-            current_line <- paste0("```{r ", current_id, "}\n")
+            current_line <- paste0("```{r ", current_id, " ", current_extra, "}\n")
             current_line <- paste0(current_line, "print(readRDS('", current_value, "'))", "\n")
             current_line <- paste0(current_line, "```")
             lines <- c(lines, current_line, "\n")
@@ -90,4 +102,13 @@ produce_report <- function(report_infos, report_filename = "report.Rmd") {
     writeLines(lines, file_conn)
     close(file_conn)
     invisible(lines)
+}
+
+complete_report_infos <- function(report_infos) {
+    # Fill missing
+    if (!"id_report" %in% colnames(report_infos))
+        report_infos$id_report <- paste("report_", 1:nrow(report_infos))
+    if (!"extra" %in% colnames(report_infos))
+        report_infos$extra <- ""
+    report_infos
 }
