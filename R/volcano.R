@@ -55,13 +55,15 @@ produce_volcano <- function(de_res, fc_threshold = 3, p_threshold = 0.05,
                             y_axis = "padj", show_signif_counts = TRUE,
                             show_signif_lines = "vertical",
                             show_signif_color = TRUE, col_up = "#E73426",
-                            col_down = "#0020F5", size = 3, graph = TRUE) {
+                            col_down = "#0020F5", size = 3, graph = TRUE,
+                            title = NULL) {
     stopifnot(is.numeric(fc_threshold))
     stopifnot(fc_threshold > 0)
     stopifnot(is.numeric(p_threshold))
     stopifnot(p_threshold >= 0 & p_threshold <= 1)
     stopifnot(is(show_signif_counts, "logical"))
     stopifnot(is(show_signif_lines, "character"))
+    stopifnot(is(title, "character") | is.null(title))
     expected_values <- c("none", "both", "vertical", "horizontal")
     stopifnot(show_signif_lines %in% expected_values)
     stopifnot(is(show_signif_color, "logical"))
@@ -101,7 +103,7 @@ produce_volcano <- function(de_res, fc_threshold = 3, p_threshold = 0.05,
                             pvalue = as.numeric(pvalue),
                             log2FoldChange = as.numeric(log2FoldChange))
 
-    # Remove NA 
+    # Remove NA
     de_res <- de_res[!is.na(de_res[[y_axis]]),]
 
     # Remove inf -log10(padj), i.e.: padj == 0
@@ -132,7 +134,7 @@ produce_volcano <- function(de_res, fc_threshold = 3, p_threshold = 0.05,
         de_res <- mutate(de_res, color = grey)
         p <- ggplot2::ggplot(de_res, ggplot2::aes(x = log2FoldChange,
                                                   y = -log10(y_axis))) +
-            ggplot2::geom_point(size = size, alpha = 0.8) 
+            ggplot2::geom_point(size = size, alpha = 0.8)
     } else {
         p <- ggplot2::ggplot(de_res, ggplot2::aes(x = log2FoldChange,
                                                   y = -log10(y_axis),
@@ -167,6 +169,9 @@ produce_volcano <- function(de_res, fc_threshold = 3, p_threshold = 0.05,
                                        fontface = 2,
                                        color = c(grey, grey))
         }
+    }
+    if(!is.null(title)){
+        p <- p + ggplot2::ggtitle(title)
     }
     p <- p + ggplot2::theme_minimal() +
         ggplot2::ylab(y_axis)
