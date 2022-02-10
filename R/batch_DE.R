@@ -163,7 +163,7 @@ validate_de_infos <- function(de_infos, design, txi) {
 
         # Groups checks
         current_group <- de_infos$group[i]
-        
+
         ## group
         if (!is(current_group, "character")) {
             msg <- "group column should be in character format"
@@ -240,7 +240,10 @@ produce_single_de_batch <- function(current_de_info, txi, design, dds) {
     current_contrasts <- c(cdi$contrast_1, cdi$contrast_2)
     current_samples <- design$sample[cd %in% current_contrasts]
     txi <- filter_txi(txi, current_samples)
-    design <- dplyr::filter(design, sample %in% current_samples)
+    design <- dplyr::filter(design, sample %in% current_samples) %>%
+        tibble::column_to_rownames("sample") %>%
+        .[colnames(txi$counts),] %>%
+        tibble::rownames_to_column("sample")
 
     if (is(cdi$formula, "character")) {
         formula <- eval(parse(text=cdi$formula))
