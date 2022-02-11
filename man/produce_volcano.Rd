@@ -15,7 +15,8 @@ produce_volcano(
   col_up = "#E73426",
   col_down = "#0020F5",
   size = 3,
-  graph = TRUE
+  graph = TRUE,
+  title = NULL
 )
 }
 \arguments{
