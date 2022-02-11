@@ -216,6 +216,7 @@ validate_de_infos <- function(de_infos, design, txi) {
                 errors[[current_id]] <- c(errors[[current_id]], msg)
             } else {
                 if (!current_count_matrix %in% names(txi)) {
+                    # Validate counts, abundance, ruvg_counts, combat_counts or extra_matrix
                     msg <- "count_matrix not found in txi"
                     errors[[current_id]] <- c(errors[[current_id]], msg)
                 }
@@ -242,7 +243,7 @@ produce_single_de_batch <- function(current_de_info, txi, design, dds) {
     txi <- filter_txi(txi, current_samples)
     design <- dplyr::filter(design, sample %in% current_samples) %>%
         tibble::column_to_rownames("sample") %>%
-        .[colnames(txi$counts),] %>%
+        .[colnames(txi$counts),,drop=FALSE] %>%
         tibble::rownames_to_column("sample")
 
     if (is(cdi$formula, "character")) {
@@ -265,6 +266,6 @@ produce_single_de_batch <- function(current_de_info, txi, design, dds) {
                                count_matrix = count_matrix)
     }
     contrast <- c(cdi$group, cdi$contrast_1, cdi$contrast_2)
-    de <- DESeq2::results(dds, contrast = contrast)
+    de <- format_de(dds, txi, contrast)
     list(dds = dds, de = de)
 }

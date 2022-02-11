@@ -150,6 +150,84 @@ splicing_analysis <- function(res, txi) {
     }
 }
 
+#' Split differential expression results
+#'
+#' This function will split the DE results table into 4 elements:
+#'     1) de: The original DE table
+#'     2) signif: All the genes considered statistically differentially
+#'                expressed
+#'     3) up: The significant genes that are up-regulated
+#'     4) down: The significant genes that are down-regulated
+#'
+#' To be considered significant, a gene must have a padj (qV) value lower or
+#' equal to the \code{p_threshold} param, an absolute fold change greater or
+#' equal to the \code{fc_threshold} param. Also, if \code{tpm_threshold} is not
+#' \code{NULL}, the average TPM across all samples in the comparison must be
+#' greater or equal to the \code{tpm_threshold} value.
+#'
+#' It is important to use the results produced with the \code{format_de}
+#' function.
+#'
+#' @param de_res the \code{data.frame} object returned by the
+#' \code{format_de} function.
+#' @param fc_threshold The threshold of FC to be considered as significant.
+#' Default: 0.05
+#' @param p_threshold The threshold of p stat to be considered as significant.
+#' Default: 1.5
+#' @param tpm_threshold The threshold of the mean TPM of the current samples to
+#' be considered as significant
+#'
+#' @return A list of DE tables.
+#'
+#' @importFrom dplyr filter
+#'
+#' @examples
+#' txi <- get_demo_txi()
+#' design <- get_demo_design()
+#' dds <- deseq2_analysis(txi, design, ~ group)
+#' de <- format_de(dds, txi, c("group", "A", "B"))
+#' split_de <- split_de_results(de)
+#'
+#' @export
+split_de_results <- function(de_res, p_threshold = 0.05, fc_threshold = 1.5,
+                             tpm_threshold = NULL) {
+    stopifnot(is(de_res, "data.frame"))
+    expected_cols <- c("qV", "fold_change", "mean_TPM_grp1", "mean_TPM_grp2")
+    stopifnot(all(expected_cols %in% colnames(de_res)))
+    stopifnot(is(p_threshold, "numeric"))
+    stopifnot(p_threshold >= 0 & p_threshold <= 1)
+    stopifnot(is(fc_threshold, "numeric"))
+    stopifnot(fc_threshold >= 0)
+    if (!is.null(tpm_threshold)) {
+        stopifnot(is(tpm_threshold, "numeric"))
+        stopifnot(tpm_threshold >= 0)
+    }
+
+    idx_p <- de_res$qV <= p_threshold
+    idx_fc <- abs(de_res$fold_change) >= fc_threshold
+    de_res$p_threshold <- FALSE
+    de_res$p_threshold[idx_p] <- TRUE
+    de_res$fc_threshold <- FALSE
+    de_res$fc_threshold[idx_fc] <- TRUE
+
+    if (!is.null(tpm_threshold)) {
+        mean_tpm_1 <- de_res$mean_TPM_grp1
+        mean_tpm_2 <- de_res$mean_TPM_grp2
+        idx_tpm <- mean(mean_tpm_1, mean_tpm_2) >= tpm_threshold
+        de_res$tpm_threshold <- FALSE
+        de_res$tpm_threshold[idx_tpm] <- TRUE
+        signif <- dplyr::filter(de_res, p_threshold, fc_threshold,
+                                tpm_threshold)
+    } else {
+        signif <- dplyr::filter(de_res, p_threshold, fc_threshold)
+    }
+
+    up <- dplyr::filter(signif, fold_change > 0)
+    down <- dplyr::filter(signif, fold_change < 0)
+
+    list(de_res = de_res, signif = signif, up = up, down = down)
+}
+
 round_values <- function(values, digits = 4) {
     stopifnot(is.numeric(values))
     i <- is.na(values)
