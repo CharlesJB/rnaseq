@@ -13,6 +13,7 @@
 #'   Default: 0.05
 #'   * fc_threshold: Minimal fold-change to be considered significative.
 #'   Default: 1.5
+#'   * title: The title of the volcano. Default: NULL
 #'   * show_signif_counts: show the number of up- and down-regulated genes?
 #'   * show_signif_lines: show lines at the threshold for significance? "none",
 #'   "vertical","horizontal" or "both". Default: "vertical"
@@ -23,7 +24,7 @@
 #'
 #' @param volcano_infos A csv file or a \code{data.frame} describing the
 #' volcanos to produce.
-#' @param volcano_results A \code{list} of DE results where the name of each DE
+#' @param de_results A \code{list} of DE results where the name of each DE
 #' corresponds to the id_de value. Or the \code{outdir} directory where
 #' the csv files of the \code{batch_de} function where saved.
 #' @param add_labels A vector of the symbols to show on the volcano plot. If
@@ -177,6 +178,8 @@ complete_volcano_infos <- function(volcano_infos) {
         volcano_infos[["col_down"]] <- "#0020F5"
     if (!"size" %in% colnames(volcano_infos))
         volcano_infos$size <- 3
+    if (!"title" %in% colnames(volcano_infos))
+        volcano_infos$title <- NULL
     volcano_infos
 }
 
@@ -323,5 +326,6 @@ produce_single_volcano_batch <- function(current_volcano_info, de_results, add_l
                     col_up = cvi$col_up,
                     col_down = cvi$col_down,
                     size = cvi$size,
+                    title = cvi$info,
                     graph = FALSE)
 }

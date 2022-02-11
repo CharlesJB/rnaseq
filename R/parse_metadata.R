@@ -149,7 +149,7 @@ parse_metadata_for_LO_report <- function(metadata){
             TRUE ~ "-")
 
         # volcano
-        id_volcano <- paste0("de_",counter_obj)
+        id_volcano <- paste0("volcano_",counter_obj)
 
         volcano_info_df[[id_volcano]] <- list(id_plot = id_volcano,
                                          id_de = id_de,
