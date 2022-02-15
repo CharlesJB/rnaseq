@@ -3,6 +3,7 @@
 export(batch_de)
 export(batch_pca)
 export(batch_volcano)
+export(create_dummy_txi)
 export(deseq2_analysis)
 export(filter_txi)
 export(format_counts)
