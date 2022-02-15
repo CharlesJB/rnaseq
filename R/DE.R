@@ -35,6 +35,15 @@ deseq2_analysis <- function(txi, design, formula, filter = 2,
         stopifnot(count_matrix %in% names(txi))
         stopifnot(is(txi[[count_matrix]], "matrix"))
     }
+    if (!is.null(txi$dummy)) {
+        stopifnot(is(txi$dummy, "character"))
+        if (is.null(count_matrix)) {
+            stopifnot("count" %in% txi$dummy)
+            stopifnot("length" %in% txi$dummy)
+        } else {
+            stopifnot(count_matrix %in% txi$dummy)
+        }
+    }
 
     if (!is.null(count_matrix)) {
         dds <- DESeq2::DESeqDataSetFromMatrix(txi[[count_matrix]], design,
@@ -77,6 +86,10 @@ deseq2_analysis <- function(txi, design, formula, filter = 2,
 #'
 #' @export
 format_de <- function(dds, txi, contrast, ignoreTxVersion = FALSE, digits = 4) {
+    if (!is.null(txi$dummy)) {
+        stopifnot(is(txi$dummy, "character"))
+        stopifnot("abundance" %in% txi$dummy)
+    }
     res <- DESeq2::results(dds, contrast = contrast) %>%
         as.data.frame() %>%
         tibble::rownames_to_column("id")

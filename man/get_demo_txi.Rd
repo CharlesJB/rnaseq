@@ -4,11 +4,14 @@
 \alias{get_demo_txi}
 \title{Get demo txi file}
 \usage{
-get_demo_txi(large = FALSE)
+get_demo_txi(large = FALSE, txOut = FALSE)
 }
 \arguments{
 \item{large}{If \code{TRUE}, txi matrices will contain 8 samples, otherwise
-they will contain 4.}
+they will contain 4. Default: \code{FALSE}}
+
+\item{txOut}{Return counts and abundance at the transcript level. Default:
+\code{FALSE}}
 }
 \value{
 A txi object

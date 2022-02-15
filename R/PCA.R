@@ -77,6 +77,17 @@ produce_pca_df <- function(txi, use_normalisation = "none", min_counts = 5,
         tpm <- as.data.frame(txi$combat_counts)
     }
 
+    if (!is.null(txi$dummy)) {
+        stopifnot(is(txi$dummy, "character"))
+        if (use_normalisation == "none") {
+            stopifnot("abundance" %in% txi$dummy)
+        } else if (use_normalisation == "ruvg") {
+            stopifnot("ruvg_counts" %in% txi$dummy)
+        } else if (use_normalisation == "combat") {
+            stopifnot("combat_counts" %in% txi$dummy)
+        }
+    }
+
     tpm <- tpm %>%
             dplyr::mutate(ensembl_gene = rownames(tpm)) %>%
             tidyr::gather(sample, tpm, -ensembl_gene)

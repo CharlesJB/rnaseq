@@ -24,7 +24,9 @@ get_demo_abundance_files <- function(large = FALSE) {
 #' Get demo txi file
 #'
 #' @param large If \code{TRUE}, txi matrices will contain 8 samples, otherwise
-#' they will contain 4.
+#' they will contain 4. Default: \code{FALSE}
+#' @param txOut Return counts and abundance at the transcript level. Default:
+#' \code{FALSE}
 #'
 #' @return A txi object
 #'
@@ -32,11 +34,13 @@ get_demo_abundance_files <- function(large = FALSE) {
 #' txi <- get_demo_txi()
 #'
 #' @export
-get_demo_txi <- function(large = FALSE) {
+get_demo_txi <- function(large = FALSE, txOut = FALSE) {
+    stopifnot(is(large, "logical"))
+    stopifnot(is(txOut, "logical"))
     abundances <- get_demo_abundance_files(large)
     names(abundances) <- basename(dirname(abundances))
     demo_anno <- system.file("extdata/demo_anno.csv", package = "rnaseq")
-    import_kallisto(abundances, anno = demo_anno)
+    import_kallisto(abundances, anno = demo_anno, txOut = txOut)
 }
 
 #' Get demo design
