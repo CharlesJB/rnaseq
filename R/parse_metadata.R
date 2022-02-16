@@ -1,15 +1,16 @@
 #' Parse metadata LO
 #'
-#'`r lifecycle::badge('experimental')`
 #' Parse metadata and generate a draft for pca_info, volcano_info, report_info
 #' files.
 #'
+#' @param metadata a dataframe
+#'
+#' @return a list of data.frame
 #'
 #' @importFrom dplyr left_join mutate case_when select pull
 #' @importFrom purrr imap_dfr
 #'
-#' @export
-
+#' TODO: export and documentation
 
 parse_metadata_for_LO_report <- function(metadata){
 
@@ -56,6 +57,12 @@ parse_metadata_for_LO_report <- function(metadata){
         legend.position = "right",
         legend.box = "vertical",
         show_names = TRUE)
+
+    # report add figure
+    counter_report <- counter_report + 1
+    report_info_df[[counter_report]] <- list(id = counter_report,
+                                             add = "plot",
+                                             value = id_pca)
 
 
     # split by cells
@@ -181,5 +188,63 @@ parse_metadata_for_LO_report <- function(metadata){
                 report_info = report_info_df))
 }
 
+
+#' wrapper
+#' @import checkmate checkPathForOutput
+#' @import dplyr mutate
+#' TODO: export documentation
+wrapper_report_LO <- function(metadata, txi, outdir){
+
+    # check metadata
+    stopifnot(is(metadata, "data.frame"))
+    stopifnot(colnames(metadata) %in% c("ID", "Compound", "Time", "Vehicule", "Dose",  "Cell"))
+
+    # check txi
+    validate_txi(txi)
+
+    # check outdir and create out folders
+    checkmate::checkPathForOutput(outdir, overwrite = TRUE)
+    r_objects <- paste0(outdir,"/r_objects/")
+    path_png <- paste0(outdir,"/png/")
+    dir.create(r_objects, showWarnings = TRUE, recursive = TRUE)
+    dir.create(path_png, showWarnings = TRUE, recursive = TRUE)
+
+    results <- list()
+
+    # 1) parse metadata
+    parse_res <- parse_metadata_for_LO_report(metadata.file)
+
+    # 2) from metadata, do batch pca
+    results[["pca"]] <- batch_pca(pca_infos = parse_res$pca_info,
+                                  txi = txi, metadata = metadata.file,
+                                  r_objects = r_objects, outdir = path_png)
+
+
+    # 3) from metadata, do batch de
+    results[["de"]] <- batch_de(de_infos = parse_res$de_info,
+                                txi = txi,
+                                design = parse_res$design_info,
+                                r_objects = r_objects,
+                                outdir = path_png)
+
+    # 4) from metadata and batch_de results, do batch volcano
+    results[["volcano"]] <- batch_volcano(volcano_infos = parse_res$volcano_info,
+                                          de_results = r_objects, # unique ids
+                                          r_objects = r_objects, # unique ids
+                                          outdir = path_png)
+
+    # 5) produce report
+    # TODO: need to change parse_res$report_info to include path of object
+    parse_res$report_info <- parse_res$report_info %>%
+        dplyr::mutate(value = ifelse(add == "plot",
+                                     paste0(r_objects, value, ".rds"),
+                                     value))
+    results[["parse_metadata"]] <- parse_res
+
+    results[["report"]] <- produce_report(report_infos = parse_res$report_info,
+                   report_filename = paste0(outdir, "/report.rmd"))
+
+    return(invisible(results))
+}
 
 
