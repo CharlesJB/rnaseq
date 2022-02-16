@@ -10,9 +10,9 @@
 #' @importFrom dplyr left_join mutate case_when select pull
 #' @importFrom purrr imap_dfr
 #'
-#' TODO: export and documentation
 
 parse_metadata_for_LO_report <- function(metadata){
+    # TODO: export and documentation
 
     stopifnot(is(metadata, "data.frame"))
     stopifnot(all(c("ID", "Compound", "Cell", "Dose", "Time", "Vehicule") %in%
@@ -190,11 +190,11 @@ parse_metadata_for_LO_report <- function(metadata){
 
 
 #' wrapper
-#' @import checkmate checkPathForOutput
-#' @import dplyr mutate
-#' TODO: export documentation
+#' @importFrom checkmate checkPathForOutput
+#' @importFrom dplyr mutate
 #' @export
 wrapper_report_LO <- function(metadata, txi, outdir){
+    # TODO: export documentation
 
     # check metadata
     stopifnot(is(metadata, "data.frame"))
