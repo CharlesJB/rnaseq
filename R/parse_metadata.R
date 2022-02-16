@@ -193,6 +193,7 @@ parse_metadata_for_LO_report <- function(metadata){
 #' @import checkmate checkPathForOutput
 #' @import dplyr mutate
 #' TODO: export documentation
+#' @export
 wrapper_report_LO <- function(metadata, txi, outdir){
 
     # check metadata
