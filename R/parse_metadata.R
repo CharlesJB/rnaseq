@@ -198,7 +198,7 @@ wrapper_report_LO <- function(metadata, txi, outdir){
 
     # check metadata
     stopifnot(is(metadata, "data.frame"))
-    stopifnot(colnames(metadata) %in% c("ID", "Compound", "Time", "Vehicule", "Dose",  "Cell"))
+    stopifnot(c("ID", "Compound", "Time", "Vehicule", "Dose",  "Cell") %in% colnames(metadata))
 
     # check txi
     validate_txi(txi)
