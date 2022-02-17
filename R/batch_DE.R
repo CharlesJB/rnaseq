@@ -148,11 +148,11 @@ batch_de <- function(de_infos, txi, design, outdir = NULL, r_objects = NULL,
 complete_de_infos <- function(de_infos) {
     # Fill missing
     if (!"formula" %in% colnames(de_infos))
-        pca_infos[["formula"]] <- "~ group"
+        de_infos[["formula"]] <- "~ group"
     if (!"filter" %in% colnames(de_infos))
-        pca_infos[["filter"]] <- 2
+        de_infos[["filter"]] <- 2
     if (!"count_matrix" %in% colnames(de_infos))
-        pca_infos[["count_matrix"]] <- NA
+        de_infos[["count_matrix"]] <- NA
     de_infos
 }
 
