@@ -18,6 +18,10 @@ batch_volcano(
 \item{volcano_infos}{A csv file or a \code{data.frame} describing the
 volcanos to produce.}
 
+\item{de_results}{A \code{list} of DE results where the name of each DE
+corresponds to the id_de value. Or the \code{outdir} directory where
+the csv files of the \code{batch_de} function where saved.}
+
 \item{add_labels}{A vector of the symbols to show on the volcano plot. If
 NULL, no symbols will be shown. Default: NULL}
 
@@ -33,10 +37,6 @@ be saved as <r_objects>/<id_plot>.rds. Default: \code{NULL}.}
 \code{FALSE}.}
 
 \item{cores}{Number of cores for the volcano creation. Default: 1}
-
-\item{volcano_results}{A \code{list} of DE results where the name of each DE
-corresponds to the id_de value. Or the \code{outdir} directory where
-the csv files of the \code{batch_de} function where saved.}
 }
 \value{
 Invisibly returns a \code{list} of all the volcano plots.
@@ -56,6 +56,7 @@ The table may contain the following columns, in no specific order:
   Default: 0.05
   * fc_threshold: Minimal fold-change to be considered significative.
   Default: 1.5
+  * title: The title of the volcano. Default: NULL
   * show_signif_counts: show the number of up- and down-regulated genes?
   * show_signif_lines: show lines at the threshold for significance? "none",
   "vertical","horizontal" or "both". Default: "vertical"

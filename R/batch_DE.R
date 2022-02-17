@@ -51,7 +51,7 @@
 #' @importFrom tibble rownames_to_column
 #' @importFrom dplyr full_join
 #' @importFrom dplyr select
-#' @importFrom dplyr everything
+# @importFrom dplyr everything
 #' @importFrom readr write_csv
 #'
 #' @export
@@ -266,6 +266,6 @@ produce_single_de_batch <- function(current_de_info, txi, design, dds) {
                                count_matrix = count_matrix)
     }
     contrast <- c(cdi$group, cdi$contrast_1, cdi$contrast_2)
-    de <- format_de(dds, txi, contrast)
+    de <- format_de(dds, txi, contrast, cdi$group)
     list(dds = dds, de = de)
 }

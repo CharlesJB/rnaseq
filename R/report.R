@@ -9,10 +9,6 @@
 #' You can also add the \code{id_report} column that will need to contains a
 #' unique identifiers for each line of the report_infos table.
 #'
-#' The \code{extra} column will be used only when the \code{add} value is
-#' "plot" and will be added as is to the code chunk. Be aware that not validity
-#' checks are performed. Make sure you use valid chunk option syntax.
-#'
 #' For text, it must be a character string corresponding to the text that
 #' will be directly added to the file specified with \code{report_filename}
 #' file.
@@ -22,6 +18,10 @@
 #' For plot, it must be a valid path to a \code{rds} file that contains the
 #' plot to show. The plot must be into a format that can be shown using the
 #' \code{print} function
+#'
+#' The \code{extra} column will be used only when the \code{add} value is
+#' "plot" and will be added as is to the code chunk. Be aware that not validity
+#' checks are performed. Make sure you use valid chunk option syntax.
 #'
 #' The content of the rmarkdown will be created by parsing each line of the
 #' \code{report_infos} table and adding the requested elements in the same

@@ -63,6 +63,8 @@ deseq2_analysis <- function(txi, design, formula, filter = 2,
 #' @param dds The DESeqDataSet object returned by deseq2_analysis.
 #' @param txi The txi object returned by the import_kallisto function.
 #' @param contrast The contrast for the comparison (see ?DESeq2::results).
+#' @param design_group The column from the design where the contrasts are
+#' located. Default: "group"
 #' @param ignoreTxVersion Should the transcript version be ignored for anno
 #' mapping. Default: \code{FALSE}.
 #' @param digits Integer indicating the number of decimal places
@@ -85,7 +87,8 @@ deseq2_analysis <- function(txi, design, formula, filter = 2,
 #' @importFrom stringr str_replace
 #'
 #' @export
-format_de <- function(dds, txi, contrast, ignoreTxVersion = FALSE, digits = 4) {
+format_de <- function(dds, txi, contrast, design_group = "group",
+                      ignoreTxVersion = FALSE, digits = 4) {
     if (!is.null(txi$dummy)) {
         stopifnot(is(txi$dummy, "character"))
         stopifnot("abundance" %in% txi$dummy)
@@ -103,8 +106,8 @@ format_de <- function(dds, txi, contrast, ignoreTxVersion = FALSE, digits = 4) {
                                 by = "id")
     }
     res <- dplyr::mutate(res,
-               mean_TPM_grp1 = get_mean_tpm(dds, txi, contrast[2]),
-               mean_TPM_grp2 = get_mean_tpm(dds, txi, contrast[3]),
+               mean_TPM_grp1 = get_mean_tpm(dds, txi, contrast[2], design_group),
+               mean_TPM_grp2 = get_mean_tpm(dds, txi, contrast[3], design_group),
                ratio = 2^log2FoldChange,
                fold_change = if_else(ratio < 1, -1 * (1/ratio), ratio)) %>%
                splicing_analysis(txi)
@@ -130,9 +133,9 @@ format_de <- function(dds, txi, contrast, ignoreTxVersion = FALSE, digits = 4) {
     as.data.frame(res)
 }
 
-get_mean_tpm <- function(dds, txi, group) {
+get_mean_tpm <- function(dds, txi, group, design_group) {
     samples <- dds@colData[,"sample", drop = TRUE]
-    samples <- samples[dds@colData[,"group", drop = TRUE] == group]
+    samples <- samples[dds@colData[,design_group, drop = TRUE] == group]
     mean_tpm <- rowMeans(txi$abundance[,samples])
     mean_tpm[names(dds)]
 }
