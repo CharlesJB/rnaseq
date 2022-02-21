@@ -125,12 +125,17 @@ batch_de <- function(de_infos, txi, design, outdir = NULL, r_objects = NULL,
         if (!is.null(outdir)) {
             output_csv <- paste0(outdir, "/", current_id, ".csv")
             if (!file.exists(output_csv) | force) {
-                res_de$de %>%
-                    as.data.frame %>%
-                    tibble::rownames_to_column("id") %>%
-                    dplyr::full_join(txi$anno, by = "id") %>%
-                    dplyr::select(id, ensembl_gene:transcript_type, dplyr::everything()) %>%
-                    readr::write_csv(output_csv)
+                tmp <- res_de$de %>%
+                    as.data.frame
+                if(!("id" %in% colnames(tmp))){
+                    tmp %>% tibble::rownames_to_column("id") %>%
+                        dplyr::full_join(txi$anno, by = "id") %>%
+                        dplyr::select(id, ensembl_gene:transcript_type, dplyr::everything()) %>%
+                        readr::write_csv(output_csv)
+                } else {
+                    # already left joined with anno
+                    tmp %>% readr::write_csv(output_csv)
+                }
             }
         }
         if (!is.null(r_objects)) {
@@ -170,7 +175,7 @@ validate_de_infos <- function(de_infos, design, txi) {
             errors[[current_id]] <- c(errors[[current_id]], msg)
         } else {
             if (!current_group %in% colnames(design)) {
-                msg <- "group column should be in character format"
+                msg <- "group column must be present in design"
                 errors[[current_id]] <- c(errors[[current_id]], msg)
             }
         }

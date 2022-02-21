@@ -4,10 +4,26 @@
 \alias{parse_metadata_for_LO_report}
 \title{Parse metadata LO}
 \usage{
-parse_metadata_for_LO_report(metadata)
+parse_metadata_for_LO_report(
+  metadata,
+  pca_subset = "Cell",
+  pca_batch_metadata = c("Cell", "Compound"),
+  extra_count_matrix = NULL
+)
+}
+\arguments{
+\item{metadata}{(dataframe)}
+
+\item{pca_subset}{(character) column of metadata, filter for automated PCA (ex.: Cell type)}
+
+\item{pca_batch_metadata}{(character) extra columns for pca coloring (biological or batch effects)}
+
+\item{extra_count_matrix}{}
+}
+\value{
+a list of data.frame
 }
 \description{
-`r lifecycle::badge('experimental')`
 Parse metadata and generate a draft for pca_info, volcano_info, report_info
 files.
 }

@@ -3,20 +3,27 @@
 #' Parse metadata and generate a draft for pca_info, volcano_info, report_info
 #' files.
 #'
-#' @param metadata a dataframe
+#' @param metadata (dataframe)
+#' @param pca_subset (character) column of metadata, filter for automated PCA (ex.: Cell type)
+#' @param pca_batch_metadata (character) extra columns for pca coloring (biological or batch effects)
+#' @param extra_count_matrix
 #'
 #' @return a list of data.frame
 #'
 #' @importFrom dplyr left_join mutate case_when select pull
 #' @importFrom purrr imap_dfr
 #'
-
-parse_metadata_for_LO_report <- function(metadata){
+parse_metadata_for_LO_report <- function(metadata,
+                                         pca_subset = "Cell",
+                                         pca_batch_metadata = c("Cell", "Compound"),
+                                         extra_count_matrix = NULL){
     # TODO: export and documentation
 
     stopifnot(is(metadata, "data.frame"))
     stopifnot(all(c("ID", "Compound", "Cell", "Dose", "Time", "Vehicule") %in%
                       colnames(metadata)))
+    stopifnot(pca_subset %in% colnames(metadata.file))
+    stopifnot(pca_batch_metadata %in% colnames(metadata.file))
 
     ## start report info
     ########################
@@ -29,7 +36,6 @@ parse_metadata_for_LO_report <- function(metadata){
 
     ## PCA
     ########################
-
     # report section: General PCA
     counter_report <- counter_report + 1
     report_info_df[[counter_report]] <- list(id = counter_report,
@@ -37,62 +43,64 @@ parse_metadata_for_LO_report <- function(metadata){
                                              value = "## General")
 
     # general PCA
-    # colored by cell
-    counter_obj = 0
+    # colored by metadata
+    counter_obj <-  0
     pca_info_df <- list()
+    for(i in pca_batch_metadata){
 
-    counter_obj <- counter_obj + 1
-    id_pca <- paste0("pca_",counter_obj)
-    pca_info_df[[id_pca]] <- list(
-        id_plot=id_pca,
-        id_metadata = "ID",
-        group = NA,
-        group_val = NA,
-        use_normalisation = "none",
-        min_counts = 5,
-        size = 3,
-        shape = NA,
-        color = "Cell",
-        title = "Cells (tpm)",
-        legend.position = "right",
-        legend.box = "vertical",
-        show_names = TRUE)
-
-    # report add figure
-    counter_report <- counter_report + 1
-    report_info_df[[counter_report]] <- list(id = counter_report,
-                                             add = "plot",
-                                             value = id_pca)
-
-
-    # split by cells
-    cell_types <- unique(metadata$Cell)
-    for(ct in cell_types){
-
-        # report subsection: PCA/Cell
+        # report section: General PCA
         counter_report <- counter_report + 1
         report_info_df[[counter_report]] <- list(id = counter_report,
                                                  add = "text",
-                                                 value = paste("##", ct))
+                                                 value = paste0("### ", pca_batch_metadata))
 
-        for(met in c("Compound", "Dose", "Time", "Vehicule")){
+        counter_obj <- counter_obj + 1
+        id_pca <- paste("pca",counter_obj,"_", i)
+        pca_info_df[[id_pca]] <- list(id_plot=id_pca, id_metadata = "ID",
+                                      group = NA, group_val = NA,
+                                      use_normalisation = "none",
+                                      min_counts = 5,
+                                      size = 3,
+                                      shape = NA,
+                                      color = i,
+                                      title = paste0("General ",i),
+                                      legend.position = "right",
+                                      legend.box = "vertical",
+                                      show_names = TRUE)
+        # report add figure
+        counter_report <- counter_report + 1
+        report_info_df[[counter_report]] <- list(id = counter_report,
+                                                 add = "plot",
+                                                 value = id_pca)
+    }
 
-            # increment counter
+    sub <- unique(metadata[,pca_subset, drop = TRUE])
+    for(i in sub){
+        # report section:
+        counter_report <- counter_report + 1
+        report_info_df[[counter_report]] <- list(id = counter_report,
+                                                 add = "text",
+                                                 value = paste0("## ", sub))
+        for(j in pca_batch_metadata){
+            # report section:
+            counter_report <- counter_report + 1
+            report_info_df[[counter_report]] <- list(id = counter_report,
+                                                     add = "text",
+                                                     value = paste0("### ", pca_batch_metadata))
+
             counter_obj <- counter_obj + 1
-            id_pca <- paste0("pca_",counter_obj)
-
+            id_pca <- paste(c("pca",counter_obj, pca_subset, i, j), collapse = "_")
             pca_info_df[[id_pca]] <- list(id_plot=id_pca, id_metadata = "ID",
-                                           group = "Cell",  # filtered by cell types
-                                           group_val = ct,
-                                           use_normalisation = "none",
-                                           min_counts = 5, size = 3,
-                                           shape = NA,
-                                           color = met,  # met here
-                                           title = paste(ct, met, sep = " - "),
-                                           legend.position = "right",
-                                           legend.box = "vertical",
-                                           show_names = TRUE)
-
+                                          group = pca_subset, group_val = i,
+                                          use_normalisation = "none",
+                                          min_counts = 5,
+                                          size = 3,
+                                          shape = NA,
+                                          color = j,
+                                          title = paste(pca_subset, i, j),
+                                          legend.position = "right",
+                                          legend.box = "vertical",
+                                          show_names = TRUE)
             # report add figure
             counter_report <- counter_report + 1
             report_info_df[[counter_report]] <- list(id = counter_report,
@@ -100,6 +108,7 @@ parse_metadata_for_LO_report <- function(metadata){
                                                      value = id_pca)
         }
     }
+
     pca_info_df <- purrr::imap_dfr(pca_info_df, ~.x)
 
     # report section: Volcano
@@ -131,15 +140,18 @@ parse_metadata_for_LO_report <- function(metadata){
         counter_obj <- counter_obj + 1
 
         # DE
-        id_de <- paste0("de_",counter_obj)
+        id_de <- paste(c("de",counter_obj, current_contrast_1, current_contrast_2), collapse = "_")
 
         de_info_df[[id_de]] <- list(id_de = id_de,
                                     group = id_de, # always Compound vs Control
                                     contrast_1 = current_contrast_1,
                                     contrast_2 = current_contrast_2,
                                     formula = paste("~", id_de),
-                                    filter = 2,
-                                    count_matrix = "extra_count_matrix")
+                                    filter = 2)
+        if(!is.null(extra_count_matrix)){
+            de_info_df[[id_de]][["count_matrix"]] <- extra_count_matrix
+        }
+
 
         samples_contrast_1 <- metadata_design[line,] %>%
             dplyr::left_join(metadata, by = c("Cell", "Compound", "Time", "Dose", "Vehicule")) %>%
@@ -156,7 +168,7 @@ parse_metadata_for_LO_report <- function(metadata){
             TRUE ~ "-")
 
         # volcano
-        id_volcano <- paste0("volcano_",counter_obj)
+        id_volcano <- paste(c("volcano",counter_obj, current_contrast_1, current_contrast_2), collapse = "_")
 
         volcano_info_df[[id_volcano]] <- list(id_plot = id_volcano,
                                          id_de = id_de,
@@ -189,16 +201,48 @@ parse_metadata_for_LO_report <- function(metadata){
 }
 
 
-#' wrapper
-#' @importFrom checkmate checkPathForOutput
-#' @importFrom dplyr mutate
+#' wrapper report LO
+#'
+#' From metadata and txi, this wrapper parse the metadata and perform all the PCA and volcano (DE).
+#' It produces a Rmd file which can be rendered.
+#'
+#'
+#' @param metadata (data.frame) sample sheet with at least the columns: ID, Compound, Time, Vehicule, Dose, Cell
+#' @param txi (list) txi object
+#' @param pca_subset (character) column of metadata, filter for automated PCA (ex.: Cell type)
+#' @param pca_batch_metadata (character) extra columns for pca coloring (biological or batch effects)
+#' @param do_pca (logical) do PCA and included the results in report (default = TRUE)
+#' @param do_DE (logical) do DE and included the results in report (default = TRUE)
+#' @param render_repport (logical) render Rmd report
+#'
+#' @return a list containing pca, volcano and report
+#'
+#' @importFrom checkmate checkPathForOutput assert_logical
+#' @importFrom dplyr mutate filter
+#' @importFrom stringr str_detect
+#'
 #' @export
-wrapper_report_LO <- function(metadata, txi, outdir){
+wrapper_report_LO <- function(metadata, txi, outdir, pca_subset, pca_batch_metadata,
+                              do_pca = TRUE, do_DE = TRUE, render_repport = TRUE,
+                              extra_count_matrix = NULL){
     # TODO: export documentation
 
     # check metadata
     stopifnot(is(metadata, "data.frame"))
     stopifnot(c("ID", "Compound", "Time", "Vehicule", "Dose",  "Cell") %in% colnames(metadata))
+
+    stopifnot(is(metadata, "data.frame"))
+    stopifnot(all(c("ID", "Compound", "Cell", "Dose", "Time", "Vehicule") %in%
+                      colnames(metadata)))
+
+    stopifnot(pca_subset %in% colnames(metadata))
+    stopifnot(pca_batch_metadata %in% colnames(metadata))
+
+    assert_character(extra_count_matrix, null.ok = TRUE)
+
+    checkmate::assert_logical(do_pca)
+    checkmate::assert_logical(do_DE)
+    checkmate::assert_logical(render_repport)
 
     # check txi
     validate_txi(txi)
@@ -207,43 +251,67 @@ wrapper_report_LO <- function(metadata, txi, outdir){
     checkmate::checkPathForOutput(outdir, overwrite = TRUE)
     r_objects <- paste0(outdir,"/r_objects/")
     path_png <- paste0(outdir,"/png/")
+    path_pca <- paste0(path_png,"/pca/")
+    path_csv <- paste0(outdir,"/de_csv/")
+    path_volcano <- paste0(path_png,"/volcano/")
+
     dir.create(r_objects, showWarnings = TRUE, recursive = TRUE)
     dir.create(path_png, showWarnings = TRUE, recursive = TRUE)
+    dir.create(path_pca, showWarnings = TRUE, recursive = TRUE)
+    dir.create(path_volcano, showWarnings = TRUE, recursive = TRUE)
+    dir.create(path_csv, showWarnings = TRUE, recursive = TRUE)
 
     results <- list()
 
     # 1) parse metadata
     parse_res <- parse_metadata_for_LO_report(metadata.file)
+    report_inf <- parse_res$report_info
 
-    # 2) from metadata, do batch pca
-    results[["pca"]] <- batch_pca(pca_infos = parse_res$pca_info,
-                                  txi = txi, metadata = metadata.file,
-                                  r_objects = r_objects, outdir = path_png)
+    if(do_pca){
+        # 2) from metadata, do batch pca
+        results[["pca"]] <- batch_pca(pca_infos = parse_res$pca_info,
+                                      txi = txi, metadata = metadata.file,
+                                      r_objects = r_objects, outdir = path_png)
+        results[["parse_metadata"]] <- parse_res
+    } else {
+        # remove pca from report
+        report_info <- report_info %>%
+            dplyr::filter(!stringr::str_detect(value, "(?i)PCA"))
+    }
 
+    if(do_DE){
+        # 3) from metadata, do batch de
+        results[["de"]] <- batch_de(de_infos = parse_res$de_info,
+                                    txi = txi,
+                                    design = parse_res$design_info,
+                                    r_objects = r_objects,
+                                    outdir = path_png)
 
-    # 3) from metadata, do batch de
-    results[["de"]] <- batch_de(de_infos = parse_res$de_info,
-                                txi = txi,
-                                design = parse_res$design_info,
-                                r_objects = r_objects,
-                                outdir = path_png)
+        # 4) from metadata and batch_de results, do batch volcano
+        results[["volcano"]] <- batch_volcano(volcano_infos = parse_res$volcano_info,
+                                              de_results = r_objects, # unique ids
+                                              r_objects = r_objects, # unique ids
+                                              outdir = path_png)
 
-    # 4) from metadata and batch_de results, do batch volcano
-    results[["volcano"]] <- batch_volcano(volcano_infos = parse_res$volcano_info,
-                                          de_results = r_objects, # unique ids
-                                          r_objects = r_objects, # unique ids
-                                          outdir = path_png)
+    } else {
+        # remove volcano from report info
+        report_info <- report_info %>% dplyr::filter(!stringr::str_detect(value, "volcano")) %>%
+            dplyr::filter(!str_detect(value, "# Differential Expression"))
+    }
 
-    # 5) produce report
+    # 5) produce report anyway
     # TODO: need to change parse_res$report_info to include path of object
     parse_res$report_info <- parse_res$report_info %>%
         dplyr::mutate(value = ifelse(add == "plot",
                                      paste0(r_objects, value, ".rds"),
                                      value))
-    results[["parse_metadata"]] <- parse_res
 
-    results[["report"]] <- produce_report(report_infos = parse_res$report_info,
-                   report_filename = paste0(outdir, "/report.rmd"))
+    results[["report"]] <- produce_report(report_infos = report_info,
+                                          report_filename = paste0(outdir, "/report.rmd"))
+
+    if(render_repport){
+        ## rmarkdown::render(...)
+    }
 
     return(invisible(results))
 }
