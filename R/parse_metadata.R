@@ -217,7 +217,7 @@ parse_metadata_for_LO_report <- function(metadata,
 #'
 #' @return a list containing pca, volcano and report
 #'
-#' @importFrom checkmate checkPathForOutput assert_logical
+#' @importFrom checkmate checkPathForOutput assert_logical assert_character
 #' @importFrom dplyr mutate filter
 #' @importFrom stringr str_detect
 #'
@@ -238,7 +238,7 @@ wrapper_report_LO <- function(metadata, txi, outdir, pca_subset, pca_batch_metad
     stopifnot(pca_subset %in% colnames(metadata))
     stopifnot(pca_batch_metadata %in% colnames(metadata))
 
-    assert_character(extra_count_matrix, null.ok = TRUE)
+    checkmate::assert_character(extra_count_matrix, null.ok = TRUE)
 
     checkmate::assert_logical(do_pca)
     checkmate::assert_logical(do_DE)
