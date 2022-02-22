@@ -55,7 +55,7 @@ parse_metadata_for_LO_report <- function(metadata,
                                                  value = paste0("### ", pca_batch_metadata))
 
         counter_obj <- counter_obj + 1
-        id_pca <- paste("pca",counter_obj,"_", i)
+        id_pca <- paste(c("pca",counter_obj,i), collapse = '_')
         pca_info_df[[id_pca]] <- list(id_plot=id_pca, id_metadata = "ID",
                                       group = NA, group_val = NA,
                                       use_normalisation = "none",

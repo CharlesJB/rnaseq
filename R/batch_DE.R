@@ -127,10 +127,24 @@ batch_de <- function(de_infos, txi, design, outdir = NULL, r_objects = NULL,
             if (!file.exists(output_csv) | force) {
                 tmp <- res_de$de %>%
                     as.data.frame
+
+                # replace qV and pV by padj and pvalue
+                i <- stringr::str_detect(colnames(tmp), "qV")
+                stopifnot(sum(i) %in% c(0,1))
+                if (sum(i) == 1) {
+                    colnames(tmp)[i] <- "padj"
+                }
+                i <- stringr::str_detect(colnames(tmp), "pV")
+                stopifnot(sum(i) %in% c(0,1))
+                if (sum(i) == 1) {
+                    colnames(tmp)[i] <- "pvalue"
+                }
+                ####
+
                 if(!("id" %in% colnames(tmp))){
-                    tmp %>% tibble::rownames_to_column("id") %>%
+                    tmp <- tmp %>% tibble::rownames_to_column("id") %>%
                         dplyr::full_join(txi$anno, by = "id") %>%
-                        dplyr::select(id, ensembl_gene:transcript_type, dplyr::everything()) %>%
+                        dplyr::select(id, ensembl_gene:transcript_type, dplyr::everything())
                         readr::write_csv(output_csv)
                 } else {
                     # already left joined with anno
