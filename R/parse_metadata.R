@@ -75,39 +75,42 @@ parse_metadata_for_LO_report <- function(metadata,
     }
 
     sub <- unique(metadata[,pca_subset, drop = TRUE])
-    for(i in sub){
-        # report section:
-        counter_report <- counter_report + 1
-        report_info_df[[counter_report]] <- list(id = counter_report,
-                                                 add = "text",
-                                                 value = paste0("## ", sub))
-        for(j in pca_batch_metadata){
+    if(length(sub)>1){ # if ==1 -> same as general
+        for(i in sub){
             # report section:
             counter_report <- counter_report + 1
             report_info_df[[counter_report]] <- list(id = counter_report,
                                                      add = "text",
-                                                     value = paste0("### ", pca_batch_metadata))
+                                                     value = paste0("## ", sub))
+            for(j in pca_batch_metadata){
+                # report section:
+                counter_report <- counter_report + 1
+                report_info_df[[counter_report]] <- list(id = counter_report,
+                                                         add = "text",
+                                                         value = paste0("### ", pca_batch_metadata))
 
-            counter_obj <- counter_obj + 1
-            id_pca <- paste(c("pca",counter_obj, pca_subset, i, j), collapse = "_")
-            pca_info_df[[id_pca]] <- list(id_plot=id_pca, id_metadata = "ID",
-                                          group = pca_subset, group_val = i,
-                                          use_normalisation = "none",
-                                          min_counts = 5,
-                                          size = 3,
-                                          shape = NA,
-                                          color = j,
-                                          title = paste(pca_subset, i, j),
-                                          legend.position = "right",
-                                          legend.box = "vertical",
-                                          show_names = TRUE)
-            # report add figure
-            counter_report <- counter_report + 1
-            report_info_df[[counter_report]] <- list(id = counter_report,
-                                                     add = "plot",
-                                                     value = id_pca)
+                counter_obj <- counter_obj + 1
+                id_pca <- paste(c("pca",counter_obj, pca_subset, i, j), collapse = "_")
+                pca_info_df[[id_pca]] <- list(id_plot=id_pca, id_metadata = "ID",
+                                              group = pca_subset, group_val = i,
+                                              use_normalisation = "none",
+                                              min_counts = 5,
+                                              size = 3,
+                                              shape = NA,
+                                              color = j,
+                                              title = paste(pca_subset, i, j),
+                                              legend.position = "right",
+                                              legend.box = "vertical",
+                                              show_names = TRUE)
+                # report add figure
+                counter_report <- counter_report + 1
+                report_info_df[[counter_report]] <- list(id = counter_report,
+                                                         add = "plot",
+                                                         value = id_pca)
+            }
         }
     }
+
 
     pca_info_df <- purrr::imap_dfr(pca_info_df, ~.x)
 
@@ -214,6 +217,7 @@ parse_metadata_for_LO_report <- function(metadata,
 #' @param do_pca (logical) do PCA and included the results in report (default = TRUE)
 #' @param do_DE (logical) do DE and included the results in report (default = TRUE)
 #' @param render_repport (logical) render Rmd report
+#' @param custom_parsed_metadata (list of data.frame) when automatic parsing can be problematic
 #'
 #' @return a list containing pca, volcano and report
 #'
@@ -224,7 +228,8 @@ parse_metadata_for_LO_report <- function(metadata,
 #' @export
 wrapper_report_LO <- function(metadata, txi, outdir, pca_subset, pca_batch_metadata,
                               do_pca = TRUE, do_DE = TRUE, render_repport = TRUE,
-                              extra_count_matrix = NULL){
+                              extra_count_matrix = NULL,
+                              custom_parsed_metadata = NULL){
     # TODO: export documentation
 
     # check metadata
@@ -264,8 +269,15 @@ wrapper_report_LO <- function(metadata, txi, outdir, pca_subset, pca_batch_metad
     results <- list()
 
     # 1) parse metadata
-    parse_res <- parse_metadata_for_LO_report(metadata.file)
-    report_inf <- parse_res$report_info
+    if(!is.null(custom_parsed_metadata)){
+        stopifnot(all(sapply(custom_parsed_metadata, function(x) is(x, "data.frame"))))
+        stopifnot(all(names(custom_parsed_metadata) %in% c("pca_info", "de_info", "design_info", "volcano_info", "report_info")))
+        parse_res <- custom_parsed_metadata
+    } else {
+        parse_res <- parse_metadata_for_LO_report(metadata.file, pca_subset = pca_subset, pca_batch_metadata = pca_batch_metadata,
+                                                  extra_count_matrix = extra_count_matrix)
+    }
+    report_info <- parse_res$report_info
 
     if(do_pca){
         # 2) from metadata, do batch pca
