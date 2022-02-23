@@ -295,12 +295,12 @@ wrapper_report_LO <- function(metadata, txi, outdir, pca_subset, pca_batch_metad
         results[["de"]] <- batch_de(de_infos = parse_res$de_info,
                                     txi = txi,
                                     design = parse_res$design_info,
-                                    r_objects = r_objects,
-                                    outdir = path_png)
+                                    r_objects = r_objects,  # DDS
+                                    outdir = path_csv)  # DE res as .csv file
 
         # 4) from metadata and batch_de results, do batch volcano
         results[["volcano"]] <- batch_volcano(volcano_infos = parse_res$volcano_info,
-                                              de_results = r_objects, # unique ids
+                                              de_results = path_csv, # unique ids
                                               r_objects = r_objects, # unique ids
                                               outdir = path_png)
 
