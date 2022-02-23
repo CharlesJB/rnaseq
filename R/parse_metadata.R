@@ -230,7 +230,6 @@ wrapper_report_LO <- function(metadata, txi, outdir, pca_subset, pca_batch_metad
                               do_pca = TRUE, do_DE = TRUE, render_repport = TRUE,
                               extra_count_matrix = NULL,
                               custom_parsed_metadata = NULL){
-    # TODO: export documentation
 
     # check metadata
     stopifnot(is(metadata, "data.frame"))
