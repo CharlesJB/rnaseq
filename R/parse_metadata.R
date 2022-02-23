@@ -312,7 +312,7 @@ wrapper_report_LO <- function(metadata, txi, outdir, pca_subset, pca_batch_metad
 
     # 5) produce report anyway
     # TODO: need to change parse_res$report_info to include path of object
-    parse_res$report_info <- parse_res$report_info %>%
+    results[["parse_metadata"]][["report_info"]] <- report_info <- report_info %>%
         dplyr::mutate(value = ifelse(add == "plot",
                                      paste0(r_objects, value, ".rds"),
                                      value))
