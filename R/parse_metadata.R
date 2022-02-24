@@ -224,12 +224,14 @@ parse_metadata_for_LO_report <- function(metadata,
 #' @importFrom checkmate checkPathForOutput assert_logical assert_character
 #' @importFrom dplyr mutate filter
 #' @importFrom stringr str_detect
+#' @importFrom rmarkdown render
 #'
 #' @export
 wrapper_report_LO <- function(metadata, txi, outdir, pca_subset, pca_batch_metadata,
                               do_pca = TRUE, do_DE = TRUE, render_repport = TRUE,
                               extra_count_matrix = NULL,
-                              custom_parsed_metadata = NULL){
+                              custom_parsed_metadata = NULL,
+                              rmd_out_filepath = "./report.Rmd"){
 
     # check metadata
     stopifnot(is(metadata, "data.frame"))
@@ -253,11 +255,15 @@ wrapper_report_LO <- function(metadata, txi, outdir, pca_subset, pca_batch_metad
 
     # check outdir and create out folders
     checkmate::checkPathForOutput(outdir, overwrite = TRUE)
+
     r_objects <- paste0(outdir,"/r_objects/")
-    path_png <- paste0(outdir,"/png/")
+    path_png <- paste0(outdir,"/pdf/")
     path_pca <- paste0(path_png,"/pca/")
     path_csv <- paste0(outdir,"/de_csv/")
     path_volcano <- paste0(path_png,"/volcano/")
+    rmd_out_filepath <- paste0(outdir, "/", rmd_out_filepath)
+    checkmate::checkPathForOutput(rmd_out_filepath, overwrite = TRUE)
+
 
     dir.create(r_objects, showWarnings = TRUE, recursive = TRUE)
     dir.create(path_png, showWarnings = TRUE, recursive = TRUE)
@@ -278,11 +284,19 @@ wrapper_report_LO <- function(metadata, txi, outdir, pca_subset, pca_batch_metad
     }
     report_info <- parse_res$report_info
 
+    # check infos sheets: only pca and de
+    # volcano needs DE files
+    # report need pca, volcano files
+    tmp_pca_info <- complete_pca_infos(parse_res$pca_info)
+    stopifnot(length(validate_pca_infos(tmp_pca_info, metadata, txi)) == 0)
+    tmp_de_infos <- complete_de_infos(parse_res$de_info)
+    stopifnot(length(validate_de_infos(tmp_de_infos, parse_res$design_info, txi)) == 0)
+
     if(do_pca){
         # 2) from metadata, do batch pca
         results[["pca"]] <- batch_pca(pca_infos = parse_res$pca_info,
                                       txi = txi, metadata = metadata.file,
-                                      r_objects = r_objects, outdir = path_png)
+                                      r_objects = r_objects, outdir = path_pca)
         results[["parse_metadata"]] <- parse_res
     } else {
         # remove pca from report
@@ -302,7 +316,7 @@ wrapper_report_LO <- function(metadata, txi, outdir, pca_subset, pca_batch_metad
         results[["volcano"]] <- batch_volcano(volcano_infos = parse_res$volcano_info,
                                               de_results = path_csv, # unique ids
                                               r_objects = r_objects, # unique ids
-                                              outdir = path_png)
+                                              outdir = path_volcano)
 
     } else {
         # remove volcano from report info
@@ -312,16 +326,18 @@ wrapper_report_LO <- function(metadata, txi, outdir, pca_subset, pca_batch_metad
 
     # 5) produce report anyway
     # TODO: need to change parse_res$report_info to include path of object
+    # path should be relative to rmd file
     results[["parse_metadata"]][["report_info"]] <- report_info <- report_info %>%
         dplyr::mutate(value = ifelse(add == "plot",
-                                     paste0(r_objects, value, ".rds"),
+                                     paste0("./r_objects/", value, ".rds"),
                                      value))
 
     results[["report"]] <- produce_report(report_infos = report_info,
-                                          report_filename = paste0(outdir, "/report.rmd"))
+                                          report_filename = rmd_out_filepath)
 
     if(render_repport){
         ## rmarkdown::render(...)
+        rmarkdown::render(rmd_out_filepath)  # to htmls
     }
 
     return(invisible(results))

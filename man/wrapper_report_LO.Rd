@@ -14,7 +14,8 @@ wrapper_report_LO(
   do_DE = TRUE,
   render_repport = TRUE,
   extra_count_matrix = NULL,
-  custom_parsed_metadata = NULL
+  custom_parsed_metadata = NULL,
+  rmd_out_filepath = "./report.Rmd"
 )
 }
 \arguments{
