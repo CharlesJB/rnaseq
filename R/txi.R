@@ -1,3 +1,31 @@
+# TODO: params
+# TODO: example
+# TODO: stopifnot
+#' Produce txi objects
+#'
+#' Produce the txi objects at the gene and at the transcript level.
+#'
+#' @return A list with the txi objects at the gene and at the transcript level
+#'
+#' @export
+produce_txi <- function(files, anno, ignoreTxVersion = TRUE, use_ruv = FALSE) {
+    # TODO: replace use_ruv by normalize %in% c("ruvg", "combat", "both")
+    txi <- list()
+    txi$tx <- import_kallisto(files, anno = anno, txOut = TRUE, ignoreTxVersion = ignoreTxVersion)
+    txi$gene <- summarize_to_gene(txi$tx, anno = anno, ignoreTxVersion = ignoreTxVersion)
+
+    # RUV
+    if (use_ruv) {
+        txi$tx <- ruvg_normalization(txi$tx,
+                                     housekeeping_genes = housekeeping_genes,
+                                     ignoreTxVersion = ignoreTxVersion)
+        txi$gene <- ruvg_normalization(txi$gene,
+                                       housekeeping_genes = housekeeping_genes,
+                                       ignoreTxVersion = ignoreTxVersion)
+    }
+    txi
+}
+
 #' Filter out txi object
 #'
 #' This function allow to filter the txi object by taking a list of sample to
