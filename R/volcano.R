@@ -80,6 +80,19 @@ produce_volcano <- function(de_res, fc_threshold = 3, p_threshold = 0.05,
     if (is(de_res, "DESeqResults")) {
         de_res <- as.data.frame(de_res)
     }
+
+    # Rename qV to padj
+    i <- stringr::str_detect(colnames(de_res), "qV")
+    stopifnot(sum(i) %in% c(0,1))
+    if (sum(i) == 1) {
+        colnames(de_res)[i] <- "padj"
+    }
+    # Rename pV to pvalue
+    i <- stringr::str_detect(colnames(de_res), "pV")
+    stopifnot(sum(i) %in% c(0,1))
+    if (sum(i) == 1) {
+        colnames(de_res)[i] <- "pvalue"
+    }
     stopifnot(y_axis %in% colnames(de_res))
 
     if (show_signif_color) {
@@ -92,12 +105,6 @@ produce_volcano <- function(de_res, fc_threshold = 3, p_threshold = 0.05,
         blue <- "#0020F5"
     }
 
-    # Rename qV to padj
-    i <- stringr::str_detect(colnames(de_res), "qV")
-    stopifnot(sum(i) %in% c(0,1))
-    if (sum(i) == 1) {
-        colnames(de_res)[i] <- "padj"
-    }
     de_res <- dplyr::mutate(de_res,
                             padj = as.numeric(padj),
                             pvalue = as.numeric(pvalue),
