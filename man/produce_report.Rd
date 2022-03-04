@@ -10,8 +10,8 @@ produce_report(report_infos, report_filename = "report.Rmd")
 \item{report_infos}{A \code{data.frame} or the path to a csv file that
 describes the report to produce.}
 
-\item{report_filename}{The name of the
-rmarkdown file to create. Default: report.Rmd}
+\item{report_filename}{The name of the rmarkdown file to create. If
+\code{NULL}, the report won't be saved to file. Default: report.Rmd}
 }
 \value{
 Invisibly returns the lines saved to the Rmd file.

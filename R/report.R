@@ -32,8 +32,8 @@
 #'
 #' @param report_infos A \code{data.frame} or the path to a csv file that
 #' describes the report to produce.
-#' @param report_filename The name of the
-#' rmarkdown file to create. Default: report.Rmd
+#' @param report_filename The name of the rmarkdown file to create. If
+#' \code{NULL}, the report won't be saved to file. Default: report.Rmd
 #'
 #' @return Invisibly returns the lines saved to the Rmd file.
 #'
@@ -77,6 +77,12 @@ produce_report <- function(report_infos, report_filename = "report.Rmd") {
             stopifnot(stringr::str_detect(current_value, "\\.rds$"))
         }
     }
+    if (!is.null(report_filename)) {
+        stopifnot(is(report_filename, "character"))
+        if (dirname(report_filename) != ".") {
+            stopifnot(dir.exists(dirname(report_filename)))
+        }
+    }
 
     # 2. Parse report_infos
     lines <- character()
@@ -98,9 +104,11 @@ produce_report <- function(report_infos, report_filename = "report.Rmd") {
             lines <- c(lines, current_line, "\n")
         }
     }
-    file_conn<-file(report_filename)
-    writeLines(lines, file_conn)
-    close(file_conn)
+    if (!is.null(report_filename)) {
+        file_conn<-file(report_filename)
+        writeLines(lines, file_conn)
+        close(file_conn)
+    }
     invisible(lines)
 }
 
