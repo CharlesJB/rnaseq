@@ -13,7 +13,7 @@
 #'   Default: 0.05
 #'   * fc_threshold: Minimal fold-change to be considered significative.
 #'   Default: 1.5
-#'   * title: The title of the volcano. Default: NULL
+#'   * title: The title of the volcano. Default: NA
 #'   * show_signif_counts: show the number of up- and down-regulated genes?
 #'   * show_signif_lines: show lines at the threshold for significance? "none",
 #'   "vertical","horizontal" or "both". Default: "vertical"
@@ -179,7 +179,7 @@ complete_volcano_infos <- function(volcano_infos) {
     if (!"size" %in% colnames(volcano_infos))
         volcano_infos$size <- 3
     if (!"title" %in% colnames(volcano_infos))
-        volcano_infos$title <- NULL
+        volcano_infos$title <- NA
     volcano_infos
 }
 
@@ -221,6 +221,15 @@ validate_volcano_infos <- function(volcano_infos, design, txi) {
         } else {
             if (current_fc_threshold <= 0) {
                 msg <- "fc_threshold value should be greater or equal to 0"
+                errors[[current_id]] <- c(errors[[current_id]], msg)
+            }
+        }
+
+        # title checks
+        current_title <- volcano_infos$title[i]
+        if (!is.na(current_title)) {
+            if (!is(current_title, "character")) {
+                msg <- "title must be a character"
                 errors[[current_id]] <- c(errors[[current_id]], msg)
             }
         }
@@ -316,6 +325,7 @@ produce_single_volcano_batch <- function(current_volcano_info, de_results, add_l
     cvi <- current_volcano_info
     de_res <- de_results[[cvi$id_de]]
 
+    # TODO: add_labels
     produce_volcano(de_res,
                     fc_threshold = cvi$fc_threshold,
                     p_threshold = cvi$p_threshold,
@@ -326,6 +336,6 @@ produce_single_volcano_batch <- function(current_volcano_info, de_results, add_l
                     col_up = cvi$col_up,
                     col_down = cvi$col_down,
                     size = cvi$size,
-                    title = cvi$info,
+                    title = cvi$title,
                     graph = FALSE)
 }
