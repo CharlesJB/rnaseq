@@ -362,6 +362,8 @@ validate_pca_infos <- function(pca_infos, metadata, txi) {
     }
 
     if (length(errors) > 0) {
+
+        message("Errors in batch_PCA:\n")
         for (i in seq_along(errors)) {
             message(paste0(names(errors)[i], ":"))
             for (j in seq_along(errors[[i]])) {
