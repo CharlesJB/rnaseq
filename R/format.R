@@ -111,7 +111,8 @@ get_ruvg_anno_df <- function(txi) {
 get_anno_df <- function(txi, colname) {
     valid_colname <- c("count", "raw_count", "counts", "raw_counts", "tpm",
                        "abundance", "TPM", "ruvg", "RUVg", "RUV", "ruv",
-                       "ruvg_counts", "fpkm", "FPKM")
+                       "ruvg_counts", "fpkm", "FPKM", "combat", "Combat",
+                        "combat_counts", "extra_count_matrix")
     stopifnot(colname %in% valid_colname)
     if (colname %in% c("count", "raw_count", "counts", "raw_counts")) {
         colname <- "counts"
@@ -124,6 +125,9 @@ get_anno_df <- function(txi, colname) {
     }
     if (colname %in% c("fpkm", "FPKM")) {
         colname <- "fpkm"
+    }
+    if (colname %in% c("combat", "Combat", "combat_counts")) {
+        colname <- "combat_counts"
     }
     as.data.frame(txi[[colname]]) %>%
         tibble::rownames_to_column("id") %>%
