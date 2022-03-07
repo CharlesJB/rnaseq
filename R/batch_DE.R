@@ -47,12 +47,17 @@
 #' de_list <- batch_de(de_infos, txi, design)
 #'
 #' @importFrom readr read_csv
-#' @importFrom parallel mclapply
+#' @importFrom stringr str_detect
 #' @importFrom tibble rownames_to_column
 #' @importFrom dplyr full_join
 #' @importFrom dplyr select
-# @importFrom dplyr everything
+#' @importFrom dplyr everything
 #' @importFrom readr write_csv
+#' @importFrom parallel mclapply
+#' @importFrom dplyr filter
+#' @importFrom tibble column_to_rownames
+#' @importFrom DESeq2 results
+#' @importFrom dplyr left_join
 #'
 #' @export
 batch_de <- function(de_infos, txi, design, outdir = NULL, r_objects = NULL,
@@ -125,31 +130,7 @@ batch_de <- function(de_infos, txi, design, outdir = NULL, r_objects = NULL,
         if (!is.null(outdir)) {
             output_csv <- paste0(outdir, "/", current_id, ".csv")
             if (!file.exists(output_csv) | force) {
-                tmp <- res_de$de %>%
-                    as.data.frame
-
-                # replace qV and pV by padj and pvalue
-                i <- stringr::str_detect(colnames(tmp), "qV")
-                stopifnot(sum(i) %in% c(0,1))
-                if (sum(i) == 1) {
-                    colnames(tmp)[i] <- "padj"
-                }
-                i <- stringr::str_detect(colnames(tmp), "pV")
-                stopifnot(sum(i) %in% c(0,1))
-                if (sum(i) == 1) {
-                    colnames(tmp)[i] <- "pvalue"
-                }
-                ####
-
-                if(!("id" %in% colnames(tmp))){
-                    tmp <- tmp %>% tibble::rownames_to_column("id") %>%
-                        dplyr::full_join(txi$anno, by = "id") %>%
-                        dplyr::select(id, ensembl_gene:transcript_type, dplyr::everything())
-                        readr::write_csv(output_csv)
-                } else {
-                    # already left joined with anno
-                    tmp %>% readr::write_csv(output_csv)
-                }
+                readr::write_csv(res_de$de, output_csv)
             }
         }
         if (!is.null(r_objects)) {
@@ -285,6 +266,13 @@ produce_single_de_batch <- function(current_de_info, txi, design, dds) {
                                count_matrix = count_matrix)
     }
     contrast <- c(cdi$group, cdi$contrast_1, cdi$contrast_2)
-    de <- format_de(dds, txi, contrast, cdi$group)
+    de <- DESeq2::results(dds, contrast = contrast) %>%
+        as.data.frame %>%
+        tibble::rownames_to_column("id") %>%
+        dplyr::left_join(txi$anno, by = "id") %>%
+        dplyr::select(-baseMean, -lfcSE, -stat) %>%
+        dplyr::relocate(log2FoldChange, pvalue, padj,
+                        .after = dplyr::last_col())
+
     list(dds = dds, de = de)
 }
