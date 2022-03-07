@@ -38,8 +38,6 @@
 #' description of each tables.
 #' @param analysis_level Should the analysis be done at the "gene", "tx" or
 #' "both" level. Default: "both".
-#' @param odysse_format Produce Odysse format deliverables? Default:
-#' \code{TRUE}.
 #' @param file_type Abundance file format to use (h5 or tsv).
 #' @param digits Integer indicating the number of decimal places
 #' @param ignoreTxVersion Should the version number in the IDs be ignored

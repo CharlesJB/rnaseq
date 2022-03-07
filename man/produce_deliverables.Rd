@@ -82,9 +82,6 @@ the steps that completed correctly.  Default: "r_objects".}
 
 \item{verbose}{Print progression of the analysis? Default: \code{FALSE}.}
 
-\item{odysse_format}{Produce Odysse format deliverables? Default:
-\code{TRUE}.}
-
 \item{add_volcanos_labels}{A vector of the symbols to show on the volcano
 plots. If \code{NULL}, no symbols will be shown. Default: \code{NULL}.}
 }
