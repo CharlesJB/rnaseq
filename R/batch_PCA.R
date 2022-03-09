@@ -63,6 +63,7 @@
 #' gg_list <- batch_pca(pca_infos, txi, metadata)
 #'
 #' @importFrom readr read_csv
+#' @importFrom dplyr select
 #'
 #' @export
 batch_pca <- function(pca_infos, txi, metadata = NULL, outdir = NULL,
@@ -122,17 +123,60 @@ batch_pca <- function(pca_infos, txi, metadata = NULL, outdir = NULL,
     stopifnot(length(validate_pca_infos(pca_infos, metadata, txi)) == 0)
 
     # Produce the pca
-    res <- list()
-    pca_analysis <- function(i) {
+    min_pca_infos <- dplyr::select(pca_infos, group, group_val, id_metadata,
+                                   use_normalisation, min_counts) %>%
+                         unique
+
+#    pca_df <- list()
+    create_pca_df <- function(i) {
+        cg <- min_pca_infos$group[i]
+        cim <- min_pca_infos$id_metadata[i]
+        cun <- min_pca_infos$use_normalisation[i]
+        cmc <- min_pca_infos$min_counts[i] %>% as.character
+        cgv <- min_pca_infos$group_val[i]
+
+        pd <- list()
+        if (is.null(pd[[cg]]))
+            pd[[cg]] <- list()
+        if (is.null(pd[[cg]][[cim]]))
+            pd[[cg]][[cim]] <- list()
+        if (is.null(pd[[cg]][[cim]][[cun]]))
+            pd[[cg]][[cim]][[cun]] <- list()
+        if (is.null(pd[[cg]][[cim]][[cun]][[cmc]]))
+            pd[[cg]][[cim]][[cun]][[cmc]] <- list()
+
+        current_pca_df <- NULL
+        if (!is.null(r_objects)) {
+            current_rds <- paste0(r_objects, "/", cg, "/", cim, "/", cun, "/",
+                                  cmc , "/", cgv, ".rds")
+            if (!dir.exists(dirname(current_rds))) {
+                dir.create(dirname(current_rds), recursive = TRUE)
+            }
+            if (file.exists(current_rds) & !force) {
+                current_pca_df <- readRDS(current_rds)
+            }
+        }
+        if (is.null(current_pca_df)) {
+            cpi <- min_pca_infos[i,,drop=FALSE]
+            current_pca_df <- produce_single_pca_df(cpi, txi, metadata)
+            if (!is.null(r_objects)) {
+                saveRDS(current_pca_df, current_rds)
+            }
+        }
+        pd[[cg]][[cim]][[cun]][[cmc]][[cgv]] <- current_pca_df
+        pd
+    }
+
+    pca_df <- parallel::mclapply(1:nrow(min_pca_infos), create_pca_df,
+                                 mc.cores = cores) %>%
+        merge_pca_lists
+
+    pca_list <- list()
+    for (i in 1:nrow(pca_infos)) {
         current_id <- pca_infos$id_plot[i]
         output_pdf <- paste0(outdir, "/", current_id, ".pdf")
-        output_rds <- paste0(r_objects, "/", current_id, ".rds")
+        gg <- produce_single_pca_batch(pca_infos[i,,drop=FALSE], pca_df)
 
-        if (!is.null(r_objects) & file.exists(output_rds) & !force) {
-            gg <- readRDS(output_rds)
-        } else {
-            gg <- produce_single_pca_batch(pca_infos[i,,drop=FALSE], txi, metadata)
-        }
         if (!is.null(outdir)) {
             if (!file.exists(output_pdf) | force) {
                 pdf(output_pdf)
@@ -140,16 +184,40 @@ batch_pca <- function(pca_infos, txi, metadata = NULL, outdir = NULL,
                 dev.off()
             }
         }
-        if (!is.null(r_objects)) {
-            if (!file.exists(output_rds) | force) {
-                saveRDS(gg, output_rds)
+        pca_list[[current_id]] <- gg
+    }
+    invisible(pca_list)
+}
+
+merge_pca_lists <- function(pl) {
+    res <- list()
+    for (cpd in pl) {
+        for (cg in names(cpd)) {
+            ccg <- cpd[[cg]]
+            if (is.null(res[[cg]]))
+                res[[cg]] <- list()
+            for (cim in names(ccg)) {
+                ccim <- ccg[[cim]]
+                if (is.null(res[[cg]][[cim]]))
+                    res[[cg]][[cim]] <- list()
+                for (cun in names(ccim)) {
+                    ccun <- ccim[[cun]]
+                    if (is.null(res[[cg]][[cim]][[cun]]))
+                        res[[cg]][[cim]][[cun]] <- list()
+                    for (cmc in names(ccun)) {
+                        ccmc <- ccun[[cmc]]
+                        if (is.null(res[[cg]][[cim]][[cun]][[cmc]]))
+                            res[[cg]][[cim]][[cun]][[cmc]] <- list()
+                        for (cgv in names(ccmc)) {
+                            ccgv <- ccmc[[cgv]]
+                            res[[cg]][[cim]][[cun]][[cmc]][[cgv]] <- ccgv
+                        }
+                    }
+                }
             }
         }
-        res[[current_id]] <- gg
     }
-    pca_list <- parallel::mclapply(1:nrow(pca_infos), pca_analysis, mc.cores = cores)
-    names(pca_list) <- pca_infos$id_plot
-    invisible(pca_list)
+    res
 }
 
 complete_pca_infos <- function(pca_infos) {
@@ -269,7 +337,7 @@ validate_pca_infos <- function(pca_infos, metadata, txi) {
                 errors[[current_id]] <- c(errors[[current_id]], msg)
             }
         }
-       
+
         ## size
         current_size <- pca_infos$size[i]
 
@@ -374,7 +442,7 @@ validate_pca_infos <- function(pca_infos, metadata, txi) {
     errors
 }
 
-produce_single_pca_batch <- function(current_pca_info, txi, metadata) {
+produce_single_pca_df <- function(current_pca_info, txi, metadata) {
     cpi <- current_pca_info
     if ("group" %in% cpi) {
         i <- metadata[[cpi$group]] == cpi$group_val
@@ -385,6 +453,18 @@ produce_single_pca_batch <- function(current_pca_info, txi, metadata) {
     if (is.na(use_normalisation)) {
         use_normalisation <- NULL
     }
+
+    res_pca <- produce_pca_df(txi = txi,
+                              use_normalisation = use_normalisation,
+                              min_counts = cpi$min_counts,
+                              metadata = metadata,
+                              id_metadata = cpi$id_metadata,
+                              ncp = 2)
+    res_pca
+}
+
+produce_single_pca_batch <- function(current_pca_info, pca_df) {
+    cpi <- current_pca_info
     shape <- cpi$shape
     if (is.na(shape)) {
         shape <- NULL
@@ -406,12 +486,14 @@ produce_single_pca_batch <- function(current_pca_info, txi, metadata) {
         legend.box <- "vertical"
     }
 
-    res_pca <- produce_pca_df(txi = txi,
-                              use_normalisation = use_normalisation,
-                              min_counts = cpi$min_counts,
-                              metadata = metadata,
-                              id_metadata = cpi$id_metadata,
-                              ncp = 2)
+    cg <- cpi$group
+    cim <- cpi$id_metadata
+    cun <- cpi$use_normalisation
+    cmc <- cpi$min_counts %>% as.character
+    cgv <- cpi$group_val
+
+    res_pca <- pca_df[[cg]][[cim]][[cun]][[cmc]][[cgv]]
+
     plot_pca(res_pca = res_pca,
              size = cpi$size,
              color = color,
