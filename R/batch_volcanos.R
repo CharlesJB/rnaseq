@@ -324,6 +324,9 @@ validate_volcano_infos <- function(volcano_infos, design, txi) {
 produce_single_volcano_batch <- function(current_volcano_info, de_results, add_labels) {
     cvi <- current_volcano_info
     de_res <- de_results[[cvi$id_de]]
+    if (is.na(cvi$title)) {
+        cvi$title <- NULL
+    }
 
     # TODO: add_labels
     produce_volcano(de_res,
