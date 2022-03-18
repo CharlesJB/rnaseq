@@ -204,7 +204,7 @@ produce_deliverables <- function(dir_kallisto,
                            ignoreTxVersion = ignoreTxVersion)
     }
 
-    res$count <- list()
+    res$counts <- list()
     ## Counts
     print_verbose("Counts extraction...", verbose)
     save_counts <- function(lvl) {
@@ -392,7 +392,7 @@ produce_deliverables <- function(dir_kallisto,
         if (analysis_level %in% c("both", "tx")) {
             msg <- "Launching batch_volcano at transcript levels..."
             print_verbose(paste0("    ", msg), verbose)
-            volcano_res$tx <- batch_volcano(volcano_infos =
+            res$volcano$tx <- batch_volcano(volcano_infos =
                                             infos_tables$volcano_infos,
                                             de_results = res$de$tx,
                                             add_labels = add_volcano_labels,
