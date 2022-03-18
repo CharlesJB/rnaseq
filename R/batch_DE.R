@@ -120,13 +120,19 @@ batch_de <- function(de_infos, txi, design, outdir = NULL, r_objects = NULL,
     de_analysis <- function(i) {
         current_id <- de_infos$id_de[i]
         output_rds <- paste0(r_objects, "/", current_id, ".rds")
+        output_rds_de <- paste0(r_objects, "/", current_id, "_de.rds")
         if (!force & !is.null(r_objects) & file.exists(output_rds)) {
             dds <- readRDS(output_rds)
         } else {
             dds <- NULL
         }
+        if (!force & !is.null(r_objects) & file.exists(output_rds_de)) {
+            de <- readRDS(output_rds_de)
+        } else {
+            de <- NULL
+        }
         res_de <- produce_single_de_batch(de_infos[i,,drop=FALSE],
-                                          txi, design, dds)
+                                          txi, design, dds, de)
         if (!is.null(outdir)) {
             output_csv <- paste0(outdir, "/", current_id, ".csv")
             if (!file.exists(output_csv) | force) {
@@ -136,6 +142,11 @@ batch_de <- function(de_infos, txi, design, outdir = NULL, r_objects = NULL,
         if (!is.null(r_objects)) {
             if (!file.exists(output_rds) | force) {
                 saveRDS(res_de$dds, output_rds)
+            }
+        }
+        if (!is.null(r_objects)) {
+            if (!file.exists(output_rds_de) | force) {
+                saveRDS(res_de$de, output_rds_de)
             }
         }
         res[[current_id]] <- res_de$de
@@ -235,8 +246,9 @@ validate_de_infos <- function(de_infos, design, txi) {
     errors
 }
 
-produce_single_de_batch <- function(current_de_info, txi, design, dds) {
+produce_single_de_batch <- function(current_de_info, txi, design, dds, de) {
     cdi <- current_de_info
+
     cd <- design[[cdi$group]]
     current_contrasts <- c(cdi$contrast_1, cdi$contrast_2)
     current_samples <- design$sample[cd %in% current_contrasts]
@@ -246,33 +258,38 @@ produce_single_de_batch <- function(current_de_info, txi, design, dds) {
         .[colnames(txi$counts),,drop=FALSE] %>%
         tibble::rownames_to_column("sample")
 
-    if (is(cdi$formula, "character")) {
-        formula <- eval(parse(text=cdi$formula))
-    }
-
-    design <- design[design[[cdi$group]] %in% c(current_contrasts),]
-
-    if (is.na(cdi$count_matrix)) {
-        count_matrix <- NULL
-    } else {
-        count_matrix <- cdi$count_matrix
-    }
-
     if (is.null(dds)) {
+        de <- NULL
+
+        if (is(cdi$formula, "character")) {
+            formula <- eval(parse(text=cdi$formula))
+        }
+
+        design <- design[design[[cdi$group]] %in% c(current_contrasts),]
+
+        if (is.na(cdi$count_matrix)) {
+            count_matrix <- NULL
+        } else {
+            count_matrix <- cdi$count_matrix
+        }
+
         dds <- deseq2_analysis(txi = txi,
                                design = design,
                                formula = formula,
                                filter = cdi$formula,
                                count_matrix = count_matrix)
     }
-    contrast <- c(cdi$group, cdi$contrast_1, cdi$contrast_2)
-    de <- DESeq2::results(dds, contrast = contrast) %>%
-        as.data.frame %>%
-        tibble::rownames_to_column("id") %>%
-        dplyr::left_join(txi$anno, by = "id") %>%
-        dplyr::select(-baseMean, -lfcSE, -stat) %>%
-        dplyr::relocate(log2FoldChange, pvalue, padj,
-                        .after = dplyr::last_col())
+
+    if (is.null(de)) {
+        contrast <- c(cdi$group, cdi$contrast_1, cdi$contrast_2)
+        de <- DESeq2::results(dds, contrast = contrast) %>%
+            as.data.frame %>%
+            tibble::rownames_to_column("id") %>%
+            dplyr::left_join(txi$anno, by = "id") %>%
+            dplyr::select(-baseMean, -lfcSE, -stat) %>%
+            dplyr::relocate(log2FoldChange, pvalue, padj,
+                            .after = dplyr::last_col())
+    }
 
     list(dds = dds, de = de)
 }
