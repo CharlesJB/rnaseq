@@ -142,7 +142,7 @@ batch_volcano <- function(volcano_infos, de_results, add_labels = NULL,
         if (!is.null(outdir)) {
             if (!file.exists(output_pdf) | force) {
                 pdf(output_pdf)
-                print(current_volcano)
+                print(current_volcano$p)
                 dev.off()
             }
         }
