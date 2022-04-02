@@ -282,13 +282,7 @@ produce_single_de_batch <- function(current_de_info, txi, design, dds, de) {
 
     if (is.null(de)) {
         contrast <- c(cdi$group, cdi$contrast_1, cdi$contrast_2)
-        de <- DESeq2::results(dds, contrast = contrast) %>%
-            as.data.frame %>%
-            tibble::rownames_to_column("id") %>%
-            dplyr::left_join(txi$anno, by = "id") %>%
-            dplyr::select(-baseMean, -lfcSE, -stat) %>%
-            dplyr::relocate(log2FoldChange, pvalue, padj,
-                            .after = dplyr::last_col())
+        de <- format_de_results(dds, txi, contrast)
     }
 
     list(dds = dds, de = de)
