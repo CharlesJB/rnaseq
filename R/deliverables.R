@@ -106,7 +106,6 @@ produce_deliverables <- function(dir_kallisto,
     stopifnot(is(analysis_level, "character"))
     stopifnot(analysis_level %in% c("gene", "tx", "both"))
     stopifnot(file_type %in% c("tsv", "h5"))
-    stopifnot(colnames(design) == c("sample", "group"))
     stopifnot(file.exists(anno))
     stopifnot(is.logical(ignoreTxVersion))
     stopifnot(!is.na(ignoreTxVersion))
