@@ -16,7 +16,7 @@ produce_volcano(
   col_down = "#0020F5",
   size = 3,
   graph = TRUE,
-  title = NULL
+  title = NA
 )
 }
 \arguments{
@@ -47,6 +47,9 @@ Defauld: "padj"}
 
 \item{graph}{produce the graph. \code{true} or \code{false}. default:
 \code{true}.}
+
+\item{title}{The title of the graph. If \code{NA}, no title will be
+displayed. Default: \code{NA}.}
 }
 \value{
 produce the volcano plot and silently returns the \code{ggplot}
