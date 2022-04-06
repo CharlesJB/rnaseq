@@ -8,7 +8,8 @@ parse_metadata_for_LO_report(
   metadata,
   pca_subset = "Cell",
   pca_batch_metadata = c("Cell", "Compound"),
-  extra_count_matrix = NULL
+  extra_count_matrix = NULL,
+  report_title = "title"
 )
 }
 \arguments{
@@ -18,7 +19,9 @@ parse_metadata_for_LO_report(
 
 \item{pca_batch_metadata}{(character) extra columns for pca coloring (biological or batch effects)}
 
-\item{extra_count_matrix}{}
+\item{extra_count_matrix}{(character)}
+
+\item{report_title}{(character)}
 }
 \value{
 a list of data.frame

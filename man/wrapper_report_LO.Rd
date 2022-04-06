@@ -12,10 +12,13 @@ wrapper_report_LO(
   pca_batch_metadata,
   do_pca = TRUE,
   do_DE = TRUE,
+  produce_rmd_report = TRUE,
   render_repport = TRUE,
   extra_count_matrix = NULL,
-  custom_parsed_metadata = NULL,
-  rmd_out_filepath = "./report.Rmd"
+  volcano_split = NULL,
+  volcano_facet_x = NULL,
+  volcano_facet_y = NULL,
+  custom_parsed_metadata = NULL
 )
 }
 \arguments{
@@ -34,6 +37,8 @@ wrapper_report_LO(
 \item{render_repport}{(logical) render Rmd report}
 
 \item{custom_parsed_metadata}{(list of data.frame) when automatic parsing can be problematic}
+
+\item{report_title}{(character), title in the report}
 }
 \value{
 a list containing pca, volcano and report

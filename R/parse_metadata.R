@@ -239,7 +239,9 @@ parse_metadata_for_LO_report <- function(metadata,
 #'
 #' @export
 wrapper_report_LO <- function(metadata, txi, outdir, pca_subset, pca_batch_metadata,
-                              do_pca = TRUE, do_DE = TRUE, render_repport = TRUE,
+                              do_pca = TRUE, do_DE = TRUE,
+                              produce_rmd_report = TRUE,
+                              render_repport = TRUE,
                               extra_count_matrix = NULL,
                               volcano_split = NULL,
                               volcano_facet_x = NULL,
@@ -364,14 +366,15 @@ wrapper_report_LO <- function(metadata, txi, outdir, pca_subset, pca_batch_metad
                                      value))
 
     #issues with filepath
-    results[["report"]] <- produce_report(report_infos = report_info,
-                                      report_filename = rmd_out_filepath)
-
-
-    if(render_repport){
-        ## rmarkdown::render(...)
-        rmarkdown::render(rmd_out_filepath)  # to htmls
+    if(produce_rmd_report){
+        results[["report"]] <- produce_report(report_infos = report_info,
+                                              report_filename = rmd_out_filepath)
+        if(render_repport){
+            ## rmarkdown::render(...)
+            rmarkdown::render(rmd_out_filepath)  # to htmls
+        }
     }
+
 
     return(invisible(results))
 }
