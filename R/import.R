@@ -163,6 +163,8 @@ get_fpkm <- function(txi) {
 #' @export
 get_filenames <- function(dir_kallisto, file_extension = "h5") {
     stopifnot(dir.exists(dir_kallisto))
+    stopifnot(is.character(file_extension))
+    stopifnot(length(file_extension) == 1)
     stopifnot(file_extension %in% c("h5", "tsv"))
     filenames <- dir(dir_kallisto,
                      pattern = file_extension,
