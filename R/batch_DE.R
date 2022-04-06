@@ -139,8 +139,7 @@ batch_de <- function(de_infos, txi, design, outdir = NULL, r_objects = NULL,
                 if (sum(i) == 1) {
                     colnames(tmp)[i] <- "pvalue"
                 }
-                ####
-
+                #### TODO: verify ahead
                 if(!("id" %in% colnames(tmp))){
                     tmp <- tmp %>% tibble::rownames_to_column("id") %>%
                         dplyr::full_join(txi$anno, by = "id") %>%

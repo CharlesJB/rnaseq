@@ -328,4 +328,7 @@ produce_single_volcano_batch <- function(current_volcano_info, de_results, add_l
                     size = cvi$size,
                     title = cvi$info,
                     graph = FALSE)
+
+    #add faceting, modify
+
 }

@@ -73,7 +73,7 @@ produce_report <- function(report_infos, report_filename = "report.Rmd") {
         } else if (current_add == "file") {
             stopifnot(file.exists(current_value))
         } else if (current_add == "plot") {
-            stopifnot(file.exists(current_value))
+            # stopifnot(file.exists(current_value))
             stopifnot(stringr::str_detect(current_value, "\\.rds$"))
         }
     }
