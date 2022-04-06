@@ -18,6 +18,7 @@
 #'
 #' @export
 filter_txi <- function(txi, samples) {
+    validate_txi(txi)
     filter_matrices <- function(txi, name) {
         stopifnot(all(samples %in% colnames(txi[[name]])))
         txi[[name]] <- txi[[name]][,colnames(txi[[name]]) %in% samples]
