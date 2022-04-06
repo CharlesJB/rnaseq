@@ -56,7 +56,7 @@ The table may contain the following columns, in no specific order:
   Default: 0.05
   * fc_threshold: Minimal fold-change to be considered significative.
   Default: 1.5
-  * title: The title of the volcano. Default: NULL
+  * title: The title of the volcano. Default: NA
   * show_signif_counts: show the number of up- and down-regulated genes?
   * show_signif_lines: show lines at the threshold for significance? "none",
   "vertical","horizontal" or "both". Default: "vertical"

@@ -27,6 +27,7 @@ get_demo_abundance_files <- function(large = FALSE) {
 #' they will contain 4. Default: \code{FALSE}
 #' @param txOut Return counts and abundance at the transcript level. Default:
 #' \code{FALSE}
+#' @param ercc Add ERCC counts to the txi?
 #'
 #' @return A txi object
 #'
@@ -34,13 +35,22 @@ get_demo_abundance_files <- function(large = FALSE) {
 #' txi <- get_demo_txi()
 #'
 #' @export
-get_demo_txi <- function(large = FALSE, txOut = FALSE) {
+get_demo_txi <- function(large = FALSE, txOut = FALSE, ercc = FALSE) {
     stopifnot(is(large, "logical"))
     stopifnot(is(txOut, "logical"))
     abundances <- get_demo_abundance_files(large)
     names(abundances) <- basename(dirname(abundances))
     demo_anno <- system.file("extdata/demo_anno.csv", package = "rnaseq")
-    import_kallisto(abundances, anno = demo_anno, txOut = txOut)
+    txi <- import_kallisto(abundances, anno = demo_anno, txOut = txOut)
+    if (ercc) {
+        m_ercc <- txi$counts[1:10,]
+        rownames(m_ercc) <- ERCC92$id[1:10]
+        txi$counts <- rbind(txi$counts, m_ercc)
+        txi$abundance <- rbind(txi$abundance, m_ercc)
+        txi$length <- rbind(txi$length, m_ercc)
+        txi$anno <- rbind(txi$anno, ERCC92[1:10,])
+    }
+    txi
 }
 
 #' Get demo design

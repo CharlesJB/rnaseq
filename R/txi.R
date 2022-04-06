@@ -125,7 +125,17 @@ create_dummy_txi <- function(tables, txOut = FALSE) {
     txi
 }
 
-# TODO: export
+#' Validate the txi object content
+#'
+#' @param txi a \code{txi} object produced by \code{import_kallisto}.
+#'
+#' @return Invisibly returns \code{TRUE} if all checks pass.
+#'
+#' @examples
+#' txi <- get_demo_txi()
+#' validate_txi(txi) 
+#'
+#' @export
 validate_txi <- function(txi) {
     # Global
     stopifnot(is(txi, "list"))
@@ -146,15 +156,15 @@ validate_txi <- function(txi) {
     if (!is.null(txi$ruvg_counts)) {
         stopifnot(is(txi$ruvg_counts, "matrix"))
         stopifnot(is.numeric(txi$ruvg_counts))
-        stopifnot(identical(colnames(txi$ruvg_counts), cownames(txi$counts)))
-        stopifnot(identical(rolnames(txi$ruvg_counts), rownames(txi$counts)))
+        stopifnot(identical(colnames(txi$counts), colnames(txi$ruvg_counts)))
+        stopifnot(identical(rownames(txi$counts), rownames(txi$ruvg_counts)))
     }
 
     if (!is.null(txi$combat_counts)) {
         stopifnot(is(txi$combat_counts, "matrix"))
         stopifnot(is.numeric(txi$combat_counts))
-        stopifnot(identical(colnames(txi$combat_counts), cownames(txi$counts)))
-        stopifnot(identical(rolnames(txi$combat_counts), rownames(txi$counts)))
+        stopifnot(identical(colnames(txi$counts), colnames(txi$combat_counts)))
+        stopifnot(identical(rownames(txi$counts), rownames(txi$combat_counts)))
     }
 
     # Data.frame
@@ -174,3 +184,22 @@ validate_txi <- function(txi) {
 
     invisible(TRUE)
 }
+
+produce_txi <- function(files, anno, ignoreTxVersion = TRUE, use_ruv = FALSE) {
+    # TODO: replace use_ruv by normalize %in% c("ruvg", "combat", "both")
+    txi <- list()
+    txi$tx <- import_kallisto(files, anno = anno, txOut = TRUE, ignoreTxVersion = ignoreTxVersion)
+    txi$gene <- summarize_to_gene(txi$tx, anno = anno, ignoreTxVersion = ignoreTxVersion)
+
+    # RUV
+    if (use_ruv) {
+        txi$tx <- ruvg_normalization(txi$tx,
+                                     housekeeping_genes = housekeeping_genes,
+                                     ignoreTxVersion = ignoreTxVersion)
+        txi$gene <- ruvg_normalization(txi$gene,
+                                       housekeeping_genes = housekeeping_genes,
+                                       ignoreTxVersion = ignoreTxVersion)
+    }
+    txi
+}
+

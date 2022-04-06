@@ -48,19 +48,7 @@ produce_pca_df <- function(txi, use_normalisation = "none", min_counts = 5,
 
     validate_txi(txi)
     stopifnot(use_normalisation %in% c("none", "ruvg", "combat"))
-    if (!is.null(metadata)) {
-        stopifnot(is(metadata, "data.frame") | is(metadata, "character"))
-        if (is.character(metadata)) {
-            stopifnot(file.exists(metadata))
-            metadata <- readr::read_csv(metadata, show_col_types = FALSE)
-        }
-        if (is.null(id_metadata)) {
-            id_metadata <- colnames(metadata)[1]
-        }
-        stopifnot(is(id_metadata, "character"))
-        stopifnot(id_metadata %in% colnames(metadata))
-        stopifnot(all(colnames(txi$abundance) %in% metadata[[id_metadata]]))
-    }
+    id_metadata <- validate_metadata(metadata, id_metadata, txi)
     stopifnot(is(ncp, "numeric"))
     stopifnot(identical(ncp, round(ncp)))
     stopifnot(ncp > 1)
@@ -129,6 +117,23 @@ produce_pca_df <- function(txi, use_normalisation = "none", min_counts = 5,
     ylab <- paste0("Dim2 (", pca$eig[2,2] %>% round(2), "%)")
 
     list(coord = df, xlab = xlab, ylab = ylab)
+}
+
+validate_metadata <- function(metadata, id_metadata, txi) {
+    if (!is.null(metadata)) {
+        stopifnot(is(metadata, "data.frame") | is(metadata, "character"))
+        if (is.character(metadata)) {
+            stopifnot(file.exists(metadata))
+            metadata <- readr::read_csv(metadata, show_col_types = FALSE)
+        }
+        if (is.null(id_metadata)) {
+            id_metadata <- colnames(metadata)[1]
+        }
+        stopifnot(is(id_metadata, "character"))
+        stopifnot(id_metadata %in% colnames(metadata))
+        stopifnot(all(colnames(txi$abundance) %in% metadata[[id_metadata]]))
+    }
+    id_metadata
 }
 
 #' Produce a PCA plot from produce_pca_df results

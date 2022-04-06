@@ -17,6 +17,8 @@
 #' @param size The size of the points. Default: 3.
 #' @param graph produce the graph. \code{true} or \code{false}. default:
 #' \code{true}.
+#' @param title The title of the graph. If \code{NA}, no title will be
+#' displayed. Default: \code{NA}.
 #'
 #' @return produce the volcano plot and silently returns the \code{ggplot}
 #' object and the data.frame used. # TODO: data.frame w anno, df signif
@@ -56,14 +58,14 @@ produce_volcano <- function(de_res, fc_threshold = 3, p_threshold = 0.05,
                             show_signif_lines = "vertical",
                             show_signif_color = TRUE, col_up = "#E73426",
                             col_down = "#0020F5", size = 3, graph = TRUE,
-                            title = NULL) {
+                            title = NA) {
     stopifnot(is.numeric(fc_threshold))
     stopifnot(fc_threshold > 0)
     stopifnot(is.numeric(p_threshold))
     stopifnot(p_threshold >= 0 & p_threshold <= 1)
     stopifnot(is(show_signif_counts, "logical"))
     stopifnot(is(show_signif_lines, "character"))
-    stopifnot(is(title, "character") | is.null(title))
+    stopifnot(is(title, "character") | is.na(title))
     expected_values <- c("none", "both", "vertical", "horizontal")
     stopifnot(show_signif_lines %in% expected_values)
     stopifnot(is(show_signif_color, "logical"))
@@ -80,6 +82,19 @@ produce_volcano <- function(de_res, fc_threshold = 3, p_threshold = 0.05,
     if (is(de_res, "DESeqResults")) {
         de_res <- as.data.frame(de_res)
     }
+
+    # Rename qV to padj
+    i <- stringr::str_detect(colnames(de_res), "qV")
+    stopifnot(sum(i) %in% c(0,1))
+    if (sum(i) == 1) {
+        colnames(de_res)[i] <- "padj"
+    }
+    # Rename pV to pvalue
+    i <- stringr::str_detect(colnames(de_res), "pV")
+    stopifnot(sum(i) %in% c(0,1))
+    if (sum(i) == 1) {
+        colnames(de_res)[i] <- "pvalue"
+    }
     stopifnot(y_axis %in% colnames(de_res))
 
     if (show_signif_color) {
@@ -92,12 +107,6 @@ produce_volcano <- function(de_res, fc_threshold = 3, p_threshold = 0.05,
         blue <- "#0020F5"
     }
 
-    # Rename qV to padj
-    i <- stringr::str_detect(colnames(de_res), "qV")
-    stopifnot(sum(i) %in% c(0,1))
-    if (sum(i) == 1) {
-        colnames(de_res)[i] <- "padj"
-    }
     de_res <- dplyr::mutate(de_res,
                             padj = as.numeric(padj),
                             pvalue = as.numeric(pvalue),
@@ -170,7 +179,7 @@ produce_volcano <- function(de_res, fc_threshold = 3, p_threshold = 0.05,
                                        color = c(grey, grey))
         }
     }
-    if(!is.null(title)){
+    if(!is.na(title)){
         p <- p + ggplot2::ggtitle(title)
     }
     p <- p + ggplot2::theme_minimal() +

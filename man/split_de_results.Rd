@@ -13,7 +13,7 @@ split_de_results(
 }
 \arguments{
 \item{de_res}{the \code{data.frame} object returned by the
-\code{format_de} function.}
+\code{format_de_results} function.}
 
 \item{p_threshold}{The threshold of p stat to be considered as significant.
 Default: 1.5}
@@ -42,14 +42,14 @@ equal to the \code{fc_threshold} param. Also, if \code{tpm_threshold} is not
 \code{NULL}, the average TPM across all samples in the comparison must be
 greater or equal to the \code{tpm_threshold} value.
 
-It is important to use the results produced with the \code{format_de}
-function.
+It is important to use the results produced with the
+\code{format_de_results} function.
 }
 \examples{
 txi <- get_demo_txi()
 design <- get_demo_design()
 dds <- deseq2_analysis(txi, design, ~ group)
-de <- format_de(dds, txi, c("group", "A", "B"))
+de <- format_de_results(dds, txi, c("group", "A", "B"))
 split_de <- split_de_results(de)
 
 }
