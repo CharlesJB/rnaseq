@@ -6,7 +6,8 @@
 #' @param metadata (dataframe)
 #' @param pca_subset (character) column of metadata, filter for automated PCA (ex.: Cell type)
 #' @param pca_batch_metadata (character) extra columns for pca coloring (biological or batch effects)
-#' @param extra_count_matrix
+#' @param extra_count_matrix (character)
+#' @param report_title (character)
 #'
 #' @return a list of data.frame
 #'
@@ -16,7 +17,8 @@
 parse_metadata_for_LO_report <- function(metadata,
                                          pca_subset = "Cell",
                                          pca_batch_metadata = c("Cell", "Compound"),
-                                         extra_count_matrix = NULL){
+                                         extra_count_matrix = NULL,
+                                         report_title = "title"){
     # TODO: export and documentation
 
     stopifnot(is(metadata, "data.frame"))
@@ -24,11 +26,19 @@ parse_metadata_for_LO_report <- function(metadata,
                       colnames(metadata)))
     stopifnot(pca_subset %in% colnames(metadata.file))
     stopifnot(pca_batch_metadata %in% colnames(metadata.file))
+    checkmate::assert_character(report_title)
 
     ## start report info
     ########################
     counter_report <- 1
     report_info_df = list()
+    report_info_df[[counter_report]] <- list(id = counter_report,
+                                             add = "text",
+             value = paste0(
+    "---\ntitle: '", report_title, "'\ndate: \"`r Sys.Date()`\"\noutput: html_document\n---\n\n",
+    "```{r, echo = FALSE}\n knitr::opts_chunk$set( echo = FALSE, warning = FALSE, message = FALSE, fig.align = 'center')\n```"))
+
+    counter_report <- counter_report + 1
     report_info_df[[counter_report]] <- list(id = counter_report,
                                              add = "text",
                                              value = "# PCA")
@@ -52,7 +62,7 @@ parse_metadata_for_LO_report <- function(metadata,
         counter_report <- counter_report + 1
         report_info_df[[counter_report]] <- list(id = counter_report,
                                                  add = "text",
-                                                 value = paste0("### ", pca_batch_metadata))
+                                                 value = paste0("### General - ", i))
 
         counter_obj <- counter_obj + 1
         id_pca <- paste(c("pca",counter_obj,i), collapse = '_')
@@ -81,13 +91,13 @@ parse_metadata_for_LO_report <- function(metadata,
             counter_report <- counter_report + 1
             report_info_df[[counter_report]] <- list(id = counter_report,
                                                      add = "text",
-                                                     value = paste0("## ", sub))
+                                                     value = paste0("## ", i))
             for(j in pca_batch_metadata){
                 # report section:
                 counter_report <- counter_report + 1
                 report_info_df[[counter_report]] <- list(id = counter_report,
                                                          add = "text",
-                                                         value = paste0("### ", pca_batch_metadata))
+                                                         value = paste0("### ", j))
 
                 counter_obj <- counter_obj + 1
                 id_pca <- paste(c("pca",counter_obj, pca_subset, i, j), collapse = "_")
@@ -218,6 +228,7 @@ parse_metadata_for_LO_report <- function(metadata,
 #' @param do_DE (logical) do DE and included the results in report (default = TRUE)
 #' @param render_repport (logical) render Rmd report
 #' @param custom_parsed_metadata (list of data.frame) when automatic parsing can be problematic
+#' @param report_title (character), title in the report
 #'
 #' @return a list containing pca, volcano and report
 #'
@@ -230,8 +241,10 @@ parse_metadata_for_LO_report <- function(metadata,
 wrapper_report_LO <- function(metadata, txi, outdir, pca_subset, pca_batch_metadata,
                               do_pca = TRUE, do_DE = TRUE, render_repport = TRUE,
                               extra_count_matrix = NULL,
-                              custom_parsed_metadata = NULL,
-                              rmd_out_filepath = "./report.Rmd"){
+                              volcano_split = NULL,
+                              volcano_facet_x = NULL,
+                              volcano_facet_y = NULL,
+                              custom_parsed_metadata = NULL){
 
     # check metadata
     stopifnot(is(metadata, "data.frame"))
@@ -250,6 +263,12 @@ wrapper_report_LO <- function(metadata, txi, outdir, pca_subset, pca_batch_metad
     checkmate::assert_logical(do_DE)
     checkmate::assert_logical(render_repport)
 
+    checkmate::assert_character(volcano_split, null.ok = TRUE, len = 1)
+    checkmate::assert_character(volcano_facet_x, null.ok = TRUE, len = 1)
+    checkmate::assert_character(volcano_facet_y, null.ok = TRUE, len = 1)
+
+
+
     # check txi
     validate_txi(txi)
 
@@ -261,7 +280,7 @@ wrapper_report_LO <- function(metadata, txi, outdir, pca_subset, pca_batch_metad
     path_pca <- paste0(path_png,"/pca/")
     path_csv <- paste0(outdir,"/de_csv/")
     path_volcano <- paste0(path_png,"/volcano/")
-    rmd_out_filepath <- paste0(outdir, "/", rmd_out_filepath)
+    rmd_out_filepath <- paste0(outdir, "/rapport.Rmd")
     checkmate::checkPathForOutput(rmd_out_filepath, overwrite = TRUE)
 
 
@@ -279,7 +298,7 @@ wrapper_report_LO <- function(metadata, txi, outdir, pca_subset, pca_batch_metad
         stopifnot(all(names(custom_parsed_metadata) %in% c("pca_info", "de_info", "design_info", "volcano_info", "report_info")))
         parse_res <- custom_parsed_metadata
     } else {
-        parse_res <- parse_metadata_for_LO_report(metadata.file, pca_subset = pca_subset, pca_batch_metadata = pca_batch_metadata,
+        parse_res <- parse_metadata_for_LO_report(metadata, pca_subset = pca_subset, pca_batch_metadata = pca_batch_metadata,
                                                   extra_count_matrix = extra_count_matrix)
     }
     report_info <- parse_res$report_info
@@ -318,6 +337,17 @@ wrapper_report_LO <- function(metadata, txi, outdir, pca_subset, pca_batch_metad
                                               r_objects = r_objects, # unique ids
                                               outdir = path_volcano)
 
+        # plot volcano object
+        if(!(is.null(volcano_split) | is.null(volcano_facet_x) | is.null(volcano_facet_y))){
+            volcanos_rds <- parse_res$volcano_info$id_plot
+            names(volcanos_rds) <- volcanos_rds
+            all_volcano <- imap_dfr(volcanos_rds, ~{
+                readRDS(paste0(r_objects, .x, ".rds")) %>%
+                    .$data %>% mutate(id_volcano = .y)}) %>%
+                left_join(parse_res$volcano_info %>%
+                          dplyr::select(-"y_axis"), by = c("id_volcano" = "id_plot"))
+        }
+
     } else {
         # remove volcano from report info
         report_info <- report_info %>% dplyr::filter(!stringr::str_detect(value, "volcano")) %>%
@@ -329,11 +359,14 @@ wrapper_report_LO <- function(metadata, txi, outdir, pca_subset, pca_batch_metad
     # path should be relative to rmd file
     results[["parse_metadata"]][["report_info"]] <- report_info <- report_info %>%
         dplyr::mutate(value = ifelse(add == "plot",
+                                     # paste0(r_objects, value, ".rds"),
                                      paste0("./r_objects/", value, ".rds"),
                                      value))
 
+    #issues with filepath
     results[["report"]] <- produce_report(report_infos = report_info,
-                                          report_filename = rmd_out_filepath)
+                                      report_filename = rmd_out_filepath)
+
 
     if(render_repport){
         ## rmarkdown::render(...)
@@ -343,4 +376,107 @@ wrapper_report_LO <- function(metadata, txi, outdir, pca_subset, pca_batch_metad
     return(invisible(results))
 }
 
+
+# produce_full_volcano <- function(de_res, fc_threshold = 3, p_threshold = 0.05,
+#                                  show_signif_counts = TRUE,
+#                                  show_signif_lines = "vertical",
+#                                  show_signif_color = TRUE, col_up = "#E73426",
+#                                  col_down = "#0020F5", size = 3, graph = TRUE,
+#                                  title = NULL) {
+#     stopifnot(is.numeric(fc_threshold))
+#     stopifnot(fc_threshold > 0)
+#     stopifnot(is.numeric(p_threshold))
+#     stopifnot(p_threshold >= 0 & p_threshold <= 1)
+#     stopifnot(is(show_signif_counts, "logical"))
+#     stopifnot(is(show_signif_lines, "character"))
+#     stopifnot(is(title, "character") | is.null(title))
+#     expected_values <- c("none", "both", "vertical", "horizontal")
+#     stopifnot(show_signif_lines %in% expected_values)
+#     stopifnot(is(show_signif_color, "logical"))
+#     if (show_signif_color) {
+#         stopifnot(is(col_up, "character"))
+#         stopifnot(is_color(col_up))
+#         stopifnot(is(col_down, "character"))
+#         stopifnot(is_color(col_down))
+#     }
+#     stopifnot(is(graph, "logical"))
+#
+#     stopifnot(y_axis %in% colnames(de_res))
+#
+#     if (show_signif_color) {
+#         red <- col_up
+#         blue <- col_down
+#         grey <- "#7C7C7C"
+#     } else {
+#         grey <- "#7C7C7C"
+#         red <- "#E73426"
+#         blue <- "#0020F5"
+#     }
+#
+#
+#     # counts
+#
+#
+#
+#     count_blue <- dplyr::filter(de_res, color == blue) %>% nrow
+#     count_red <- dplyr::filter(de_res, color == red) %>% nrow
+#     lbl <- c(count_blue, count_red) %>% as.character
+#     count_y <- round(max(-log10(de_res$padj), na.rm = TRUE))
+#     count_y <- count_y * 0.925
+#     min_x <- round(min(de_res$log2FoldChange, na.rm = TRUE))
+#     min_x <- min_x * 0.925
+#     max_x <- round(max(de_res$log2FoldChange, na.rm = TRUE))
+#     max_x <- max_x * 0.925
+#
+#     if (!show_signif_color) {
+#         de_res <- mutate(de_res, color = grey)
+#         p <- ggplot2::ggplot(de_res, ggplot2::aes(x = log2FoldChange,
+#                                                   y = -log10(y_axis))) +
+#             ggplot2::geom_point(size = size, alpha = 0.8)
+#     } else {
+#         p <- ggplot2::ggplot(de_res, ggplot2::aes(x = log2FoldChange,
+#                                                   y = -log10(y_axis),
+#                                                   color = color)) +
+#             ggplot2::geom_point(size = size, alpha = 0.8) +
+#             ggplot2::scale_colour_identity()
+#     }
+#     if (show_signif_lines %in% c("both", "vertical")) {
+#         p <- p + ggplot2::geom_vline(xintercept = c(-log2(fc_threshold),
+#                                                     log2(fc_threshold)),
+#                                      linetype = "dashed")
+#     }
+#     if (show_signif_lines %in% c("both", "horizontal")) {
+#         p <- p + ggplot2::geom_hline(yintercept = -log10(p_threshold),
+#                                      linetype = "dashed")
+#     }
+#     if (show_signif_counts) {
+#         if (show_signif_color) {
+#             p <- p + ggplot2::annotate("text",
+#                                        x = c(min_x, max_x),
+#                                        y = count_y,
+#                                        label = lbl,
+#                                        size = 8,
+#                                        fontface = 2,
+#                                        color = c(blue, red))
+#         } else {
+#             p <- p + ggplot2::annotate("text",
+#                                        x = c(min_x, max_x),
+#                                        y = count_y,
+#                                        label = lbl,
+#                                        size = 8,
+#                                        fontface = 2,
+#                                        color = c(grey, grey))
+#         }
+#     }
+#     if(!is.null(title)){
+#         p <- p + ggplot2::ggtitle(title)
+#     }
+#     p <- p + ggplot2::theme_minimal() +
+#         ggplot2::ylab(y_axis)
+#
+#     if (isTRUE(graph)) {
+#         print(p)
+#     }
+#     invisible(list(p = p, df = de_res))
+# }
 
