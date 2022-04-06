@@ -6,10 +6,11 @@
 #'                ?DESeqDataSetFromTximport).
 #' @param filter The minimum number of reads detected for a feature across all
 #'               samples. Default: 2
-#' @param count_matrix The count matrix to use for the differential analysis.
-#' Will use the \code{DESeq2::DESeqDataSetFromMatrix} instead of the
+#' @param count_matrix Use an alternative count matrix to use for the
+#' differential analysis instead of \code{txi$counts}. Will use the
+#' \code{DESeq2::DESeqDataSetFromMatrix} instead of the
 #' \code{DESeq2::DESeqDataSetFromTximport} function, so will work even if txi
-#' object is incomplete (i.e.: length matrix is missing). Default: NA
+#' object is incomplete (i.e.: length matrix is missing).  Default: \code{NA}.
 #' @param ... Extra param for the DESeq2::DESeq function
 #'
 #' @return A DESeqDataSet object.
@@ -22,6 +23,7 @@
 #'
 #' @importFrom DESeq2 DESeqDataSetFromMatrix
 #' @importFrom DESeq2 DESeqDataSetFromTximport
+#' @importFrom DESeq2 counts
 #' @importFrom DESeq2 DESeq
 #'
 #' @export
@@ -51,7 +53,7 @@ deseq2_analysis <- function(txi, design, formula, filter = 2,
     } else {
         dds <- DESeq2::DESeqDataSetFromTximport(txi, design, formula)
     }
-    dds <- dds[rowSums(counts(dds)) >= filter]
+    dds <- dds[rowSums(DESeq2::counts(dds)) >= filter]
     dds <- DESeq2::DESeq(dds, ...)
     dds
 }
