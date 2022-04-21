@@ -86,7 +86,7 @@ produce_report <- function(report_infos, report_filename = "report.Rmd") {
     }
 
     # 2. Parse report_infos
-    produce_lines <- function(i)
+    produce_lines <- function(i) {
         lines <- character()
         current_add <- report_infos$add[i]
         current_value <- report_infos$value[i]
