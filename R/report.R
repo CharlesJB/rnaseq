@@ -86,8 +86,8 @@ produce_report <- function(report_infos, report_filename = "report.Rmd") {
     }
 
     # 2. Parse report_infos
-    lines <- character()
-    for (i in 1:nrow(report_infos)) {
+    produce_lines <- function(i)
+        lines <- character()
         current_add <- report_infos$add[i]
         current_value <- report_infos$value[i]
         current_extra <- report_infos$extra[i]
@@ -106,9 +106,10 @@ produce_report <- function(report_infos, report_filename = "report.Rmd") {
             lines <- c(lines, current_line, "\n")
         }
     }
+    all_lines <- purrr::map(1:nrow(report_infos), produce_lines) %>% unlist
     if (!is.null(report_filename)) {
         file_conn<-file(report_filename)
-        writeLines(lines, file_conn)
+        writeLines(all_lines, file_conn)
         close(file_conn)
     }
     invisible(lines)
