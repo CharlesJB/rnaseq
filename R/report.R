@@ -43,6 +43,7 @@
 #' @importFrom dplyr pull
 #' @importFrom tools file_path_sans_ext
 #' @importFrom stringr str_detect
+#' @importFrom R.utils getRelativePath
 #'
 #' @export
 produce_report <- function(report_infos, report_filename = "report.Rmd") {
@@ -73,7 +74,7 @@ produce_report <- function(report_infos, report_filename = "report.Rmd") {
         } else if (current_add == "file") {
             stopifnot(file.exists(current_value))
         } else if (current_add == "plot") {
-            # stopifnot(file.exists(current_value))
+            stopifnot(file.exists(current_value))
             stopifnot(stringr::str_detect(current_value, "\\.rds$"))
         }
     }
@@ -96,10 +97,11 @@ produce_report <- function(report_infos, report_filename = "report.Rmd") {
         } else if (current_add == "file") {
             lines <- c(lines, readLines(current_value), "\n")
         } else if (current_add == "plot") {
+            correct_path_value <- R.utils::getRelativePath(current_value, dirname(report_filename))
             current_id <- basename(current_value) %>%
                 tools::file_path_sans_ext()
             current_line <- paste0("```{r ", current_id, " ", current_extra, "}\n")
-            current_line <- paste0(current_line, "print(readRDS('", current_value, "'))", "\n")
+            current_line <- paste0(current_line, "print(readRDS('", correct_path_value, "'))", "\n")
             current_line <- paste0(current_line, "```")
             lines <- c(lines, current_line, "\n")
         }
