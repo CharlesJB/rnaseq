@@ -69,7 +69,6 @@
 #' @export
 batch_pca <- function(pca_infos, txi, metadata = NULL, outdir = NULL,
                       r_objects = NULL, force = FALSE, cores = 1) {
-
     # 1. Data validation
     ## pca_infos
     stopifnot(is(pca_infos, "data.frame") | is(pca_infos, "character"))
@@ -176,7 +175,6 @@ batch_pca <- function(pca_infos, txi, metadata = NULL, outdir = NULL,
     pca_list <- list()
     for (i in 1:nrow(pca_infos)) {
         current_id <- pca_infos$id_plot[i]
-        output_pdf <- paste0(outdir, "/", current_id, ".pdf")
         cg <- pca_infos$group[i]
         cgv <- pca_infos$group_val[i]
         cim <- pca_infos$id_metadata[i]
@@ -193,7 +191,14 @@ batch_pca <- function(pca_infos, txi, metadata = NULL, outdir = NULL,
         current_pca <- pca_df[[cg]][[cgv]][[current_prefix]]
         gg <- produce_single_pca_batch(pca_infos[i,,drop=FALSE], current_pca)
 
+        if (!is.null(r_objects)) {
+            output_rds <- paste0(r_objects, "/", current_id, ".pdf")
+            if (!file.exists(output_rds) | force) {
+                saveRDS(gg, output_rds)
+            }
+        }
         if (!is.null(outdir)) {
+            output_pdf <- paste0(outdir, "/", current_id, ".pdf")
             if (!file.exists(output_pdf) | force) {
                 pdf(output_pdf)
                 print(gg)
