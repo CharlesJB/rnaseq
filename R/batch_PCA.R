@@ -192,7 +192,7 @@ batch_pca <- function(pca_infos, txi, metadata = NULL, outdir = NULL,
         gg <- produce_single_pca_batch(pca_infos[i,,drop=FALSE], current_pca)
 
         if (!is.null(r_objects)) {
-            output_rds <- paste0(r_objects, "/", current_id, ".pdf")
+            output_rds <- paste0(r_objects, "/", current_id, ".rds")
             if (!file.exists(output_rds) | force) {
                 saveRDS(gg, output_rds)
             }
