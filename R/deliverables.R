@@ -228,7 +228,7 @@ produce_deliverables <- function(dir_kallisto,
                         df <- get_anno_df(current_txi, m)
                         if (!is.null(outdir)) {
                             current_count_file <- paste0(outdir_counts, "/", m,
-                                                         ".csv")
+                                                         "_", lvl, ".csv")
                             if (force | !file.exists(current_count_file)) {
                                 msg <- "            Saving to disk."
                                 print_verbose(msg, verbose)
