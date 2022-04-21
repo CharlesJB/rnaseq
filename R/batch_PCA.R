@@ -464,6 +464,7 @@ produce_single_pca_df <- function(current_pca_info, txi, metadata) {
         id_metadata <- validate_metadata(metadata, cpi$id_metadata, txi)
         if ("group" %in% colnames(cpi)) {
             i <- metadata[[cpi$group]] == cpi$group_val
+            i[is.na(i)] <- FALSE
             current_samples <- metadata[[cpi$id_metadata]][i]
             txi <- filter_txi(txi, current_samples)
         }
