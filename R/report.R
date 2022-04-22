@@ -34,6 +34,7 @@
 #' describes the report to produce.
 #' @param report_filename The name of the rmarkdown file to create. If
 #' \code{NULL}, the report won't be saved to file. Default: report.Rmd
+#' @param verbose Print progression? Default: \code{FALSE}.
 #'
 #' @return Invisibly returns the lines saved to the Rmd file.
 #'
@@ -46,9 +47,12 @@
 #' @importFrom R.utils getRelativePath
 #'
 #' @export
-produce_report <- function(report_infos, report_filename = "report.Rmd") {
+produce_report <- function(report_infos, report_filename = "report.Rmd", verbose = FALSE) {
 
     # 1. Data validation
+    stopifnot(is(verbose, "logical"))
+    msg <- "Starting data validation..."
+    print_verbose(msg, verbose)
     stopifnot(is(report_infos, "data.frame") | is(report_infos, "character"))
     if (is.character(report_infos)) {
         stopifnot(file.exists(report_infos))
@@ -84,18 +88,25 @@ produce_report <- function(report_infos, report_filename = "report.Rmd") {
             stopifnot(dir.exists(dirname(report_filename)))
         }
     }
+    msg <- "Done!\n"
+    print_verbose(msg, verbose)
 
     # 2. Parse report_infos
+    msg <- "Parsing report_infos line by line..."
+    print_verbose(msg, verbose)
     produce_lines <- function(i) {
-        lines <- character()
+        if (i %% 50 == 0) {
+            msg <- paste0("    Parsed: ", i, " lines")
+            print_verbose(msg)
+        }
         current_add <- report_infos$add[i]
         current_value <- report_infos$value[i]
         current_extra <- report_infos$extra[i]
 
         if (current_add == "text") {
-            lines <- c(lines, current_value, "\n")
+            lines <- c(current_value, "\n")
         } else if (current_add == "file") {
-            lines <- c(lines, readLines(current_value), "\n")
+            lines <- c(readLines(current_value), "\n")
         } else if (current_add == "plot") {
             correct_path_value <- R.utils::getRelativePath(current_value, dirname(report_filename))
             current_id <- basename(current_value) %>%
@@ -103,15 +114,25 @@ produce_report <- function(report_infos, report_filename = "report.Rmd") {
             current_line <- paste0("```{r ", current_id, " ", current_extra, "}\n")
             current_line <- paste0(current_line, "print(readRDS('", correct_path_value, "'))", "\n")
             current_line <- paste0(current_line, "```")
-            lines <- c(lines, current_line, "\n")
+            lines <- c(current_line, "\n")
         }
+        lines
     }
     all_lines <- purrr::map(1:nrow(report_infos), produce_lines) %>% unlist
+    msg <- "Parsing report_infos line by line... Done!"
+    print_verbose(msg, verbose)
+
+    msg <- "Printing Rmd file..."
+    print_verbose(msg, verbose)
+
     if (!is.null(report_filename)) {
         file_conn<-file(report_filename)
         writeLines(all_lines, file_conn)
         close(file_conn)
     }
+    msg <- "Done!"
+    print_verbose(msg, verbose)
+
     invisible(lines)
 }
 

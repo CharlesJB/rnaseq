@@ -4,7 +4,7 @@
 \alias{produce_report}
 \title{Produce report in Rmd format}
 \usage{
-produce_report(report_infos, report_filename = "report.Rmd")
+produce_report(report_infos, report_filename = "report.Rmd", verbose = FALSE)
 }
 \arguments{
 \item{report_infos}{A \code{data.frame} or the path to a csv file that
@@ -12,6 +12,8 @@ describes the report to produce.}
 
 \item{report_filename}{The name of the rmarkdown file to create. If
 \code{NULL}, the report won't be saved to file. Default: report.Rmd}
+
+\item{verbose}{Print progression? Default: \code{FALSE}.}
 }
 \value{
 Invisibly returns the lines saved to the Rmd file.
