@@ -97,7 +97,7 @@ produce_report <- function(report_infos, report_filename = "report.Rmd", verbose
     produce_lines <- function(i) {
         if (i %% 50 == 0) {
             msg <- paste0("    Parsed: ", i, " lines")
-            print_verbose(msg)
+            print_verbose(msg, verbose)
         }
         current_add <- report_infos$add[i]
         current_value <- report_infos$value[i]
