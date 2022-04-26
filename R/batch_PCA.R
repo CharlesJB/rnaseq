@@ -476,12 +476,6 @@ produce_single_pca_df <- function(current_pca_info, txi, metadata) {
                               ncp = 2)
 
     if (!is.null(metadata)) {
-        if (!is(metadata[[id_metadata]], "character")) {
-            metadata[[id_metadata]] <- as.character(metadata[[id_metadata]])
-        }
-        if (!is(res_pca$coord$sample, "character")) {
-            res_pca$coord$sample <- as.character(res_pca$coord$sample)
-        }
         res_pca$coord <- dplyr::left_join(res_pca$coord, metadata, by = c("sample" = id_metadata))
     }
     res_pca
