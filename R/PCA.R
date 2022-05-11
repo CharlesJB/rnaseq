@@ -244,7 +244,7 @@ plot_pca <- function(res_pca, size = 3, color = NULL, shape = NULL,
     }
 
     # show_names
-    if(!show_names){
+    if(show_names){
         gg <- gg + ggrepel::geom_text_repel(ggplot2::aes(label = sample),
                                             color = "black", force = 10)
     }
