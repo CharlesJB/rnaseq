@@ -24,8 +24,8 @@ parse_metadata_for_LO_report <- function(metadata,
     stopifnot(is(metadata, "data.frame"))
     stopifnot(all(c("ID", "Compound", "Cell", "Dose", "Time", "Vehicule") %in%
                       colnames(metadata)))
-    stopifnot(pca_subset %in% colnames(metadata.file))
-    stopifnot(pca_batch_metadata %in% colnames(metadata.file))
+    stopifnot(pca_subset %in% colnames(metadata))
+    stopifnot(pca_batch_metadata %in% colnames(metadata))
     checkmate::assert_character(report_title)
 
     ## start report info
@@ -316,7 +316,7 @@ wrapper_report_LO <- function(metadata, txi, outdir, pca_subset, pca_batch_metad
     if(do_pca){
         # 2) from metadata, do batch pca
         results[["pca"]] <- batch_pca(pca_infos = parse_res$pca_info,
-                                      txi = txi, metadata = metadata.file,
+                                      txi = txi, metadata = metadata,
                                       r_objects = r_objects, outdir = path_pca)
         results[["parse_metadata"]] <- parse_res
     } else {
