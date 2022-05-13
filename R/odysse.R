@@ -97,10 +97,10 @@ produce_odysse_format <- function(res, outdir, prefix, use_ruv = FALSE,
         mc_fun <- function(n, lvl) {
             format_de_res(res$de[[lvl]][[n]], n)
         }
-        de$gene <- parallel::mclapply(names(res$de$gene), format_de_res,
+        de$gene <- parallel::mclapply(names(res$de$gene), mc_fun,
                                       lvl = "gene", mc.cores = ncores)
         names(de$gene) <- names(res$de$gene)
-        de$tx <- parallel::mclapply(names(res$de$tx), format_de_res,
+        de$tx <- parallel::mclapply(names(res$de$tx), mc_fun,
                                       lvl = "tx", mc.cores = ncores)
         names(de$tx) <- names(res$de$tx)
     }
@@ -208,7 +208,7 @@ format_counts <- function(txi, digits = 4, use_ruv = FALSE) {
 format_de_odysse <- function(de_res, txi, samples_grp1, samples_grp2,
                              digits = 4) {
     validate_txi(txi)
-    validate_de(de_res, txi)
+    validate_de(de_res, txi, keep_stats = TRUE)
     stopifnot(is(samples_grp1, "character"))
     stopifnot(length(samples_grp1) > 1)
     stopifnot(is(samples_grp2, "character"))
