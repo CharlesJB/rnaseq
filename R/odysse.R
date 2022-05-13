@@ -74,12 +74,12 @@ produce_odysse_format <- function(res, outdir, prefix, use_ruv = FALSE,
 
     # DE
     format_de_res <- function(current_de, current_id_de, lvl) {
-        current_info_de <- dplyr::filter(infos_tables$de_infos,
+        current_info_de <- dplyr::filter(res$infos_tables$de_infos,
                                   id_de == current_id_de)
         current_contrast_1 <- current_info_de$contrast_1
         current_contrast_2 <- current_info_de$contrast_2
         current_group <- current_info_de$group
-        design <- infos_tables$design_infos
+        design <- res$infos_tables$design_infos
         i <- design[[current_group]] == current_contrast_1
         j <- design[[current_group]] == current_contrast_2
         current_samples_1 <- design$sample[i]
