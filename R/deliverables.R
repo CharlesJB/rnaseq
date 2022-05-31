@@ -141,7 +141,7 @@ produce_deliverables <- function(dir_kallisto,
         stopifnot("de_infos" %in% names(infos_tables))
     }
 
-    infos_tables <- complete_and_validate_tables(infos_tables)
+#    infos_tables <- complete_and_validate_tables(infos_tables)
     print_verbose("    Done!", verbose)
 
     ## Directories
