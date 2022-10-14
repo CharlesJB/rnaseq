@@ -4,7 +4,7 @@
 \alias{format_de_results}
 \title{Minimal formatting of de results}
 \usage{
-format_de_results(dds, txi, contrast, keep_stats = TRUE)
+format_de_results(dds, txi, contrast, keep_stats = TRUE, add_mean_dds = FALSE)
 }
 \arguments{
 \item{dds}{The DESeqDataSet object returned by deseq2_analysis.}
@@ -16,6 +16,9 @@ format_de_results(dds, txi, contrast, keep_stats = TRUE)
 
 \item{keep_stats}{Keep baseMean, lfcSE and stat values in the results?
 Default: \code{TRUE}.}
+
+\item{add_mean_dds}{Add the mean DESeq normalization value for each group of
+the comparison. Default: \code{FALSE}}
 }
 \value{
 A data.frame with the id, ensembl_gene, symbol, entrez_id,

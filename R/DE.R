@@ -150,6 +150,8 @@ split_de_results <- function(de_res, p_threshold = 0.05, fc_threshold = 1.5,
 #' "<comp1>", "<comp2>") format.
 #' @param keep_stats Keep baseMean, lfcSE and stat values in the results?
 #' Default: \code{TRUE}.
+#' @param add_mean_dds Add the mean DESeq normalization value for each group of
+#' the comparison. Default: \code{FALSE}
 #'
 #' @return A data.frame with the id, ensembl_gene, symbol, entrez_id,
 #' transcript_type, log2FoldChange, pvalue, padj columns.
@@ -161,6 +163,8 @@ split_de_results <- function(de_res, p_threshold = 0.05, fc_threshold = 1.5,
 #' de_res <- format_de_results(dds, txi,  c("group", "A", "B"))
 #'
 #' @importFrom DESeq2 results
+#' @importFrom DESeq2 counts
+#' @importFrom SummarizedExperiment colData
 #' @importFrom tibble rownames_to_column
 #' @importFrom dplyr full_join
 #' @importFrom dplyr relocate
@@ -168,7 +172,7 @@ split_de_results <- function(de_res, p_threshold = 0.05, fc_threshold = 1.5,
 #' @importFrom dplyr select
 #'
 #' @export
-format_de_results <- function(dds, txi, contrast, keep_stats = TRUE) {
+format_de_results <- function(dds, txi, contrast, keep_stats = TRUE, add_mean_dds = FALSE) {
     stopifnot(is(dds, "DESeqDataSet"))
     validate_txi(txi)
     stopifnot(is(contrast, "character"))
@@ -191,18 +195,35 @@ format_de_results <- function(dds, txi, contrast, keep_stats = TRUE) {
             dplyr::relocate(log2FoldChange, pvalue, padj,
                             .after = dplyr::last_col())
     }
+    if (add_mean_dds) {
+        dds_counts <- DESeq2::counts(dds, normalized = TRUE)
+        design <- SummarizedExperiment::colData(dds)
+        i <- design[,contrast[1], drop = TRUE] == contrast[2]
+        j <- design[,contrast[1], drop = TRUE] == contrast[3]
+        mean_dds_grp1 <- rowMeans(dds_counts[,i])
+        mean_dds_grp2 <- rowMeans(dds_counts[,j])
+        stopifnot(all(names(mean_dds_grp1) %in% de_res$id))
+        stopifnot(all(names(mean_dds_grp2) %in% de_res$id))
+        mean_dds_grp1 <- mean_dds_grp1[de_res$id]
+        mean_dds_grp2 <- mean_dds_grp2[de_res$id]
+        de_res$mean_dds_grp1 <- mean_dds_grp1
+        de_res$mean_dds_grp2 <- mean_dds_grp2
+    }
 
-    validate_de(de_res, txi, keep_stats)
+    validate_de(de_res, txi, keep_stats, add_mean_dds)
     de_res
 }
 
-validate_de <- function(de, txi, keep_stats) {
+validate_de <- function(de, txi, keep_stats, add_mean_dds) {
     stopifnot(is(de, "data.frame"))
 
     expected_cols <- c("id", "ensembl_gene", "symbol", "entrez_id",
                        "transcript_type", "log2FoldChange", "pvalue", "padj")
     if (keep_stats) {
         expected_cols <- c(expected_cols, "baseMean", "lfcSE", "stat")
+    }
+    if (add_mean_dds) {
+        expected_cols <- c(expected_cols, "mean_dds_grp1", "mean_dds_grp2")
     }
     stopifnot(all(expected_cols %in% colnames(de)))
 
@@ -217,6 +238,10 @@ validate_de <- function(de, txi, keep_stats) {
         stopifnot(is(de$baseMean, "numeric"))
         stopifnot(is(de$lfcSE, "numeric"))
         stopifnot(is(de$stat, "numeric"))
+    }
+    if (add_mean_dds) {
+        stopifnot(is(de$mean_dds_grp1, "numeric"))
+        stopifnot(is(de$mean_dds_grp2, "numeric"))
     }
 
     stopifnot(all(txi$anno$id %in% de$id))
