@@ -48,12 +48,12 @@ import_kallisto <- function(filenames, anno, txOut = FALSE,
     txi$fpkm <- get_fpkm(txi)
     txi$anno <- get_anno(anno, txOut)
     expected_colnames <- c("id" , "ensembl_gene", "symbol", "entrez_id", "transcript_type")
-    
+
     stopifnot(identical(colnames(txi$anno), expected_colnames))
     stopifnot(sum(is.na(txi$anno$id)) == 0)
     stopifnot(sum(is.na(txi$anno$ensembl_gene)) == 0)
     stopifnot(length(unique(txi$anno$id)) == length(txi$anno$id))
-    
+
     txi$txOut <- txOut
     if (!ignoreTxVersion) {
         stopifnot(all(rownames(txi$fpkm) %in% txi$anno$id))
@@ -112,7 +112,8 @@ arrange_anno <- function(anno) {
               "IG_J_pseudogene", "IG_V_pseudogene", "IG_pseudogene",
               "IG_C_pseudogene", "TR_J_pseudogene", "TR_V_pseudogene",
               "rRNA_pseudogene", "retained_intron", "non_stop_decay",
-              "nonsense_mediated_decay", "TEC")
+              "nonsense_mediated_decay", "TEC",
+              "protein_coding_CDS_not_defined", "protein_coding_LoF")
     stopifnot(all(anno$transcript_type %in% lvls))
 
     dplyr::mutate(anno, transcript_type = factor(transcript_type,
