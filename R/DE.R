@@ -214,7 +214,7 @@ format_de_results <- function(dds, txi, contrast, keep_stats = TRUE, add_mean_dd
     de_res
 }
 
-validate_de <- function(de, txi, keep_stats, add_mean_dds) {
+validate_de <- function(de, txi, keep_stats, add_mean_dds = FALSE) {
     stopifnot(is(de, "data.frame"))
 
     expected_cols <- c("id", "ensembl_gene", "symbol", "entrez_id",
