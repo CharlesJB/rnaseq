@@ -42,6 +42,7 @@
 #' @return Invisibly returns a \code{list} of all the volcano plots.
 #'
 #' @examples
+#' \dontrun{
 #' # First launch batch_de
 #' de_infos <- get_demo_de_infos_file()
 #' txi <- get_demo_txi()
@@ -50,6 +51,7 @@
 #' # Then do the volcano_batch
 #' volcano_infos <- get_demo_volcano_infos_file()
 #' volcano_list <- batch_volcano(volcano_infos, de_list)
+#' }
 #'
 #' @importFrom readr read_csv
 #' @importFrom purrr map

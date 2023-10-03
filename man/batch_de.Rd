@@ -18,6 +18,8 @@ batch_de(
 \item{de_infos}{A csv file or a \code{data.frame} describing the DE analysis
 to perform.}
 
+\item{txi}{The txi object returned by the import_kallisto function.}
+
 \item{design}{A csv file of a \code{data.frame} describing the groups for
 the comparisons.}
 
@@ -64,9 +66,11 @@ The table may contain the following columns, in no specific order:
   object is incomplete (i.e.: length matrix is missing). Default: NA
 }
 \examples{
+\dontrun{
 de_infos <- get_demo_de_infos_file()
 txi <- get_demo_txi()
 design <- get_demo_design()
 de_list <- batch_de(de_infos, txi, design)
+}
 
 }

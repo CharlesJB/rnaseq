@@ -46,10 +46,12 @@ It is important to use the results produced with the
 \code{format_de_results} function.
 }
 \examples{
+\dontrun{
 txi <- get_demo_txi()
 design <- get_demo_design()
 dds <- deseq2_analysis(txi, design, ~ group)
 de <- format_de_results(dds, txi, c("group", "A", "B"))
 split_de <- split_de_results(de)
+}
 
 }

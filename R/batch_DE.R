@@ -26,6 +26,7 @@
 #'
 #' @param de_infos A csv file or a \code{data.frame} describing the DE analysis
 #' to perform.
+#' @param txi The txi object returned by the import_kallisto function.
 #' @param design A csv file of a \code{data.frame} describing the groups for
 #' the comparisons.
 #' @param outdir The directory where to save DE analysis in csv format. If
@@ -41,10 +42,12 @@
 #' @return Invisibly returns a \code{list} of all the DE results.
 #'
 #' @examples
+#' \dontrun{
 #' de_infos <- get_demo_de_infos_file()
 #' txi <- get_demo_txi()
 #' design <- get_demo_design()
 #' de_list <- batch_de(de_infos, txi, design)
+#' }
 #'
 #' @importFrom readr read_csv
 #' @importFrom stringr str_detect

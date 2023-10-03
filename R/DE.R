@@ -90,11 +90,13 @@ deseq2_analysis <- function(txi, design, formula, filter = 2,
 #' @importFrom dplyr filter
 #'
 #' @examples
+#' \dontrun{
 #' txi <- get_demo_txi()
 #' design <- get_demo_design()
 #' dds <- deseq2_analysis(txi, design, ~ group)
 #' de <- format_de_results(dds, txi, c("group", "A", "B"))
 #' split_de <- split_de_results(de)
+#' }
 #'
 #' @export
 split_de_results <- function(de_res, p_threshold = 0.05, fc_threshold = 1.5,

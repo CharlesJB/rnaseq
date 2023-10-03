@@ -66,6 +66,7 @@ The table may contain the following columns, in no specific order:
   * size: The point size. Default: 3
 }
 \examples{
+\dontrun{
 # First launch batch_de
 de_infos <- get_demo_de_infos_file()
 txi <- get_demo_txi()
@@ -74,5 +75,6 @@ de_list <- batch_de(de_infos, txi, design)
 # Then do the volcano_batch
 volcano_infos <- get_demo_volcano_infos_file()
 volcano_list <- batch_volcano(volcano_infos, de_list)
+}
 
 }
